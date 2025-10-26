@@ -1,0 +1,259 @@
+/* Global Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Arial', sans-serif;
+    line-height: 1.6;
+    color: #333;
+    background-color: #f5f5f5;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+/* Hero Section */
+#hero {
+    position: relative;
+    height: 100vh;
+    overflow: hidden;
+    background: #000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#matrix-canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 1;
+}
+
+.hero-content {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    color: #00ff00;
+}
+
+.hero-content h1 {
+    font-size: 4rem;
+    font-weight: bold;
+    margin-bottom: 20px;
+    text-shadow: 0 0 20px rgba(0, 255, 0, 0.5);
+    font-family: 'Courier New', monospace;
+}
+
+.tagline {
+    font-size: 1.5rem;
+    margin-bottom: 40px;
+    font-style: italic;
+}
+
+.cta-button {
+    display: inline-block;
+    padding: 15px 30px;
+    margin: 0 10px;
+    background-color: #00ff00;
+    color: #000;
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 1.1rem;
+    border: 2px solid #00ff00;
+    border-radius: 5px;
+    transition: all 0.3s ease;
+}
+
+.cta-button:hover {
+    background-color: #fff;
+    color: #000;
+    box-shadow: 0 0 20px rgba(0, 255, 0, 0.4);
+}
+
+.secondary {
+    background-color: transparent;
+    color: #00ff00;
+}
+
+/* Main Content */
+main {
+    background-color: #f5f5f5;
+}
+
+.section {
+    padding: 80px 0;
+}
+
+.section h2 {
+    font-size: 2.5rem;
+    margin-bottom: 20px;
+    text-align: center;
+    color: #333;
+}
+
+.section p {
+    font-size: 1.2rem;
+    margin-bottom: 40px;
+    text-align: center;
+    max-width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* Products Section */
+.products-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 30px;
+    margin-bottom: 60px;
+}
+
+.product-card {
+    background: white;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+
+.product-card h3 {
+    font-size: 1.5rem;
+    margin-bottom: 15px;
+    color: #333;
+}
+
+.product-card p {
+    margin-bottom: 25px;
+    color: #666;
+}
+
+.product-button {
+    padding: 10px 20px;
+    background-color: #333;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.product-button:hover {
+    background-color: #555;
+}
+
+/* Courses Section */
+.courses-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 30px;
+    margin-bottom: 60px;
+}
+
+.course-card {
+    background: white;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+
+.course-card h3 {
+    font-size: 1.5rem;
+    margin-bottom: 15px;
+    color: #333;
+}
+
+.course-card p {
+    margin-bottom: 25px;
+    color: #666;
+}
+
+.course-button {
+    padding: 10px 20px;
+    background-color: #00ff00;
+    color: black;
+    border: none;
+    border-radius: 5px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.course-button:hover {
+    background-color: #00cc00;
+}
+
+/* Section CTA */
+.section-cta {
+    text-align: center;
+}
+
+.section-cta p {
+    margin-bottom: 20px;
+    font-weight: bold;
+}
+
+.section-cta .cta-button {
+    margin: 0;
+}
+
+/* Footer */
+footer {
+    background-color: #333;
+    color: white;
+    padding: 40px 0;
+    text-align: center;
+}
+
+.social-media {
+    margin-top: 20px;
+}
+
+.social-button {
+    display: inline-block;
+    margin: 0 10px;
+    width: 50px;
+    height: 50px;
+    color: white;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    text-decoration: none;
+}
+
+.social-button:hover {
+    background-color: #00ff00;
+    color: black;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .hero-content h1 {
+        font-size: 3rem;
+    }
+
+    .tagline {
+        font-size: 1.2rem;
+    }
+
+    .cta-button {
+        display: block;
+        margin: 10px 0;
+    }
+
+    .products-grid,
+    .courses-grid {
+        grid-template-columns: 1fr;
+    }
+}
