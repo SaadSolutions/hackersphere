@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HackerSphere - Course Details</title>
+
+    <!-- Preload critical CSS -->
+    <link rel="preload" href="styles.css" as="style">
+    <link rel="preload" href="academy/styles.css" as="style">
+
+    <!-- Load styles -->
+    <link rel="stylesheet" href="../styles.css">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Hacker Matrix Rain Background -->
+    <canvas id="matrix-canvas"></canvas>
+
+    <!-- Header -->
+    <header class="academy-header">
+        <nav class="academy-nav academy-container">
+            <a href="/" class="academy-title">HACKERSPHERE</a>
+
+            <div class="academy-nav-links">
+                <a href="/academy/catalog" class="academy-nav-link" data-page="catalog">Catalog</a>
+                <a href="/academy/dashboard" class="academy-nav-link" data-page="dashboard">Dashboard</a>
+                <button id="auth-button" class="academy-button small secondary">Login</button>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main class="academy-main">
+        <!-- Course Content -->
+        <section class="academy-section">
+            <div class="academy-container">
+                <div id="course-content">
+                    <!-- Course details will be populated here by JavaScript -->
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Scripts -->
+    <script src="../code.js"></script>
+    <script src="api.js"></script>
+    <script src="auth.js"></script>
+    <script src="utils.js"></script>
+    <script src="courses.js"></script>
+
+    <script>
+        // Initialize course detail page
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Check authentication
+            const isAuthenticated = window.AcademyAPI.isAuthenticated();
+
+            // Update auth button
+            updateAuthButton();
+
+            // Handle auth button clicks
+            document.getElementById('auth-button').addEventListener('click', async () => {
+                if (isAuthenticated) {
+                    // Logout
+                    await window.AcademyAuth.logout();
+                    updateAuthButton();
+                } else {
+                    // Simulate login for demo
+                    await window.AcademyAuth.login('demo_user', 'password');
+                    updateAuthButton();
+                }
+            });
+
+            // Get course slug from URL
+            const courseSlug = getCourseSlugFromURL();
+
+            if (!courseSlug) {
+                showErrorPage('Course not found');
+                return;
+            }
+
+            // Initialize course detail view
+            await CourseDetail.init(courseSlug);
+
+            function updateAuthButton() {
+                const authButton = document.getElementById('auth-button');
+                const isAuthenticated = window.AcademyAPI.isAuthenticated();
+
+                authButton.textContent = isAuthenticated ? 'Logout' : 'Login';
+                authButton.classList.toggle('secondary', !isAuthenticated);
+            }
+
+            function getCourseSlugFromURL() {
+                // Check URL parameter first (for direct links)
+                const courseSlug = Utils.getURLParam('slug');
+                if (courseSlug) return courseSlug;
+
+                // Check router state (for navigation within app)
+                const path = window.location.pathname;
+                const match = path.match(/\/academy\/course\/([^\/]+)/);
+                return match ? match[1] : null;
+            }
+
+            function showErrorPage(message) {
+                const contentElement = document.getElementById('course-content');
+                contentElement.innerHTML = `
+                    <div class="text-center" style="padding: var(--spacing-xxl);">
+                        <h2 style="color: var(--error-red); margin-bottom: var(--spacing-lg);">
+                            Error Loading Course
+                        </h2>
+                        <p style="color: var(--text-secondary); margin-bottom: var(--spacing-lg);">
+                            ${message}
+                        </p>
+                        <a href="/academy/catalog" class="academy-button">
+                            Back to Catalog
+                        </a>
+                    </div>
+                `;
+            }
+        });
+
+        // Setup router for navigation
+        if (window.AcademyRouter) {
+            // Add course route handler
+            window.AcademyRouter.addRoute('course/:courseSlug', (params) => {
+                // This would be called when navigating to course pages
+                console.log('Course detail page navigated to:', params);
+            });
+        }
+    </script>
+
+    <style>
+    /* Course Detail Specific Styles */
+
+    .course-header {
+        margin-bottom: var(--spacing-xxl);
+        background: var(--hacker-grey);
+        border: 1px solid var(--matrix-green);
+        border-radius: var(--radius-lg);
+        padding: var(--spacing-xxl);
+    }
+
+    .course-hero {
+        text-align: center;
+    }
+
+    .course-title {
+        font-size: 3rem;
+        color: var(--matrix-green);
+        margin-bottom: var(--spacing-lg);
+        text-shadow: 0 0 15px var(--matrix-green-glow);
+        font-family: var(--font-mono);
+    }
+
+    .course-meta {
+        display: flex;
+        justify-content: center;
+        gap: var(--spacing-lg);
+        margin-bottom: var(--spacing-lg);
+        flex-wrap: wrap;
+        align-items: center;
+    }
+
+    .course-difficulty {
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 0.9rem;
+        font-weight: bold;
+        text-transform: uppercase;
+        font-family: var(--font-mono);
+        letter-spacing: 1px;
+    }
+
+    .course-duration,
+    .course-category {
+        color: var(--text-dim);
+        font-family: var(--font-mono);
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .course-description {
+        font-size: 1.1rem;
+        color: var(--text-secondary);
+        line-height: 1.6;
+        max-width: 800px;
+        margin: 0 auto var(--spacing-xl);
+    }
+
+    .enroll-section {
+        display: flex;
+        justify-content: center;
+        gap: var(--spacing-md);
+        flex-wrap: wrap;
+    }
+
+    .enroll-btn,
+    .enrolled-btn {
+        min-width: 200px;
+    }
+
+    /* Course Modules and Lessons */
+    .course-modules {
+        display: grid;
+        gap: var(--spacing-xl);
+    }
+
+    .course-module {
+        background: var(--hacker-grey-light);
+        border: 1px solid var(--matrix-green);
+        border-radius: var(--radius-lg);
+        padding: var(--spacing-xl);
+        transition: all 0.3s ease;
+    }
+
+    .course-module:hover {
+        border-color: var(--matrix-green-light);
+        box-shadow: 0 0 20px rgba(0, 255, 0, 0.1);
+    }
+
+    .module-title {
+        color: var(--matrix-green);
+        margin-bottom: var(--spacing-md);
+        border-bottom: 1px solid var(--matrix-green);
+        padding-bottom: var(--spacing-sm);
+    }
+
+    .module-description {
+        color: var(--text-secondary);
+        font-style: italic;
+        margin-bottom: var(--spacing-lg);
+    }
+
+    .module-lessons {
+        display: grid;
+        gap: var(--spacing-md);
+    }
+
+    .lesson-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: var(--hacker-grey);
+        border: 1px solid rgba(0, 255, 0, 0.3);
+        border-radius: var(--radius-md);
+        padding: var(--spacing-md);
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .lesson-item:hover {
+        border-color: var(--matrix-green);
+        background: rgba(0, 255, 0, 0.05);
+        transform: translateX(5px);
+    }
+
+    .lesson-info {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-md);
+        flex-grow: 1;
+    }
+
+    .lesson-number {
+        background: var(--matrix-green);
+        color: black;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-family: var(--font-mono);
+        font-size: 0.9rem;
+    }
+
+    .lesson-title {
+        margin: 0;
+        color: var(--text-primary);
+        font-size: 1rem;
+    }
+
+    .lesson-duration {
+        color: var(--text-dim);
+        font-size: 0.9rem;
+        font-family: var(--font-mono);
+        text-transform: uppercase;
+    }
+
+    .lesson-status {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-sm);
+    }
+
+    .preview-badge {
+        background: var(--warning-orange);
+        color: black;
+        padding: 2px 8px;
+        border-radius: 12px;
+        font-size: 0.75rem;
+        font-weight: bold;
+        text-transform: uppercase;
+        font-family: var(--font-mono);
+    }
+
+    .status-indicator {
+        color: var(--matrix-green);
+        font-size: 1.2rem;
+        font-family: var(--font-mono);
+    }
+
+    .status-indicator.completed {
+        color: var(--success-green);
+    }
+
+    .status-indicator.in-progress {
+        color: var(--warning-orange);
+    }
+
+    /* Progress indicators */
+    .lesson-item.completed {
+        border-color: var(--success-green);
+        background: rgba(0, 255, 0, 0.1);
+    }
+
+    .lesson-item.completed .lesson-title {
+        color: var(--success-green);
+    }
+
+    .lesson-item.completed .status-indicator {
+        color: var(--success-green);
+        content: '✓';
+    }
+
+    .lesson-item.in-progress {
+        border-color: var(--warning-orange);
+        background: rgba(255, 170, 0, 0.1);
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .course-title {
+            font-size: 2.5rem;
+        }
+
+        .course-meta {
+            flex-direction: column;
+            gap: var(--spacing-md);
+        }
+
+        .enroll-section {
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .module-lessons {
+            gap: var(--spacing-sm);
+        }
+
+        .lesson-item {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: var(--spacing-sm);
+        }
+
+        .lesson-info {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: var(--spacing-sm);
+        }
+
+        .lesson-status {
+            align-self: flex-end;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .course-header {
+            padding: var(--spacing-lg);
+        }
+
+        .course-title {
+            font-size: 2rem;
+        }
+
+        .course-description {
+            font-size: 1rem;
+        }
+
+        .course-module {
+            padding: var(--spacing-lg);
+        }
+
+        .lesson-item {
+            padding: var(--spacing-sm);
+        }
+    }
+
+    /* Loading state */
+    @media (prefers-reduced-motion: reduce) {
+        .course-module,
+        .lesson-item {
+            transition: none;
+        }
+
+        .lesson-item:hover {
+            transform: none;
+        }
+    }
+    </style>
+</body>
+</html>

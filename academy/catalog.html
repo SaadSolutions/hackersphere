@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HackerSphere - Course Catalog</title>
+
+    <!-- Preload critical CSS -->
+    <link rel="preload" href="styles.css" as="style">
+    <link rel="preload" href="academy/styles.css" as="style">
+
+    <!-- Load styles -->
+    <link rel="stylesheet" href="../styles.css">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+   
+
+    <!-- Header -->
+    <header class="academy-header">
+        <nav class="academy-nav academy-container">
+            <a href="/hackersphere/" class="academy-title">HACKERSPHERE</a>
+
+            <div class="academy-nav-links">
+                <a href="/hackersphere/academy/catalog" class="academy-nav-link active" data-page="catalog">Catalog</a>
+                <a href="/hackersphere/academy/dashboard" class="academy-nav-link" data-page="dashboard">Dashboard</a>
+                <button id="auth-button" class="academy-button small secondary">Login</button>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main class="academy-main">
+        <!-- Filters and Search -->
+        <section class="academy-section">
+            <div class="academy-container">
+                <div class="catalog-controls">
+                    <!-- Search -->
+                    <div class="academy-form-group">
+                        <input
+                            type="text"
+                            id="search-input"
+                            class="academy-input"
+                            placeholder="Search courses..."
+                            autocomplete="off"
+                        />
+                    </div>
+
+                    <!-- Filters -->
+                    <div class="filter-controls">
+                        <select id="difficulty-filter" class="academy-select">
+                            <option value="">All Levels</option>
+                            <option value="beginner">Beginner</option>
+                            <option value="intermediate">Intermediate</option>
+                            <option value="advanced">Advanced</option>
+                        </select>
+
+                        <button id="show-featured" class="academy-button small">
+                            Featured Only
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Results Count -->
+                <div id="results-count" class="results-count">
+                    <!-- Will be populated by JavaScript -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Course Grid -->
+        <section class="academy-section">
+            <div class="academy-container">
+                <div id="courses-grid" class="academy-grid">
+                    <!-- Course cards will be populated here -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Load More -->
+        <section class="academy-section">
+            <div class="academy-container">
+                <div id="load-more-container" class="text-center" style="display: none;">
+                    <button id="load-more-btn" class="academy-button">
+                        Load More Courses
+                    </button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Scripts -->
+    <script src="../code.js"></script>
+    <script src="api.js"></script>
+    <script src="auth.js"></script>
+    <script src="utils.js"></script>
+    <script src="courses.js"></script>
+
+    <script>
+        // Initialize catalog page
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Check authentication for protected features
+            const isAuthenticated = window.AcademyAPI.isAuthenticated();
+
+            // Initialize course catalog
+            await CourseCatalog.init();
+
+            // Update auth button
+            updateAuthButton();
+
+            // Handle auth button clicks
+            document.getElementById('auth-button').addEventListener('click', async () => {
+                if (isAuthenticated) {
+                    // Logout
+                    await window.AcademyAuth.logout();
+                    updateAuthButton();
+                } else {
+                    // Simulate login for demo (replace with real auth flow)
+                    await window.AcademyAuth.login('demo_user', 'password');
+                    updateAuthButton();
+                }
+            });
+
+            function updateAuthButton() {
+                const authButton = document.getElementById('auth-button');
+                const isAuthenticated = window.AcademyAPI.isAuthenticated();
+
+                authButton.textContent = isAuthenticated ? 'Logout' : 'Login';
+                authButton.classList.toggle('secondary', !isAuthenticated);
+            }
+        });
+
+        // Setup router for navigation
+        if (window.AcademyRouter) {
+            window.AcademyRouter.addRoute('catalog', () => {
+                // Handle catalog page route
+                console.log('Catalog page navigated to');
+            });
+        }
+    </script>
+
+    <style>
+    /* Additional Catalog-specific styles */
+    .catalog-controls {
+        display: flex;
+        gap: var(--spacing-lg);
+        align-items: flex-end;
+        flex-wrap: wrap;
+        margin-bottom: var(--spacing-xl);
+    }
+
+    .filter-controls {
+        display: flex;
+        gap: var(--spacing-md);
+        align-items: center;
+        flex-wrap: wrap;
+    }
+
+    .results-count {
+        color: var(--text-dim);
+        font-family: var(--font-mono);
+        font-size: 0.9rem;
+        margin-bottom: var(--spacing-lg);
+        text-transform: uppercase;
+    }
+
+    .text-center {
+        text-align: center;
+    }
+
+    /* Course card overrides */
+    .course-card {
+        cursor: pointer;
+        transition: all 0.3s ease;
+        min-height: 300px;
+    }
+
+    .course-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0, 255, 0, 0.2);
+    }
+
+    .course-meta {
+        margin: 15px 0;
+        font-size: 0.9rem;
+        color: var(--text-dim);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .course-difficulty {
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 0.8rem;
+        font-weight: bold;
+        text-transform: uppercase;
+        font-family: var(--font-mono);
+        letter-spacing: 1px;
+    }
+
+    .course-difficulty.beginner {
+        background: rgba(0, 255, 0, 0.1);
+        color: var(--success-green);
+        border: 1px solid var(--success-green);
+    }
+
+    .course-difficulty.intermediate {
+        background: rgba(255, 170, 0, 0.1);
+        color: var(--warning-orange);
+        border: 1px solid var(--warning-orange);
+    }
+
+    .course-difficulty.advanced {
+        background: rgba(255, 68, 68, 0.1);
+        color: var(--error-red);
+        border: 1px solid var(--error-red);
+    }
+
+    .featured-badge {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: var(--matrix-green);
+        color: black;
+        padding: 4px 8px;
+        font-size: 0.8rem;
+        font-weight: bold;
+        text-transform: uppercase;
+        font-family: var(--font-mono);
+        border-radius: 4px;
+    }
+
+    .course-view-button {
+        margin-top: var(--spacing-md);
+        width: 100%;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+        .catalog-controls {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .filter-controls {
+            justify-content: space-between;
+            flex-wrap: wrap;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .catalog-controls {
+            gap: var(--spacing-md);
+        }
+
+        .filter-controls {
+            flex-direction: column;
+            align-items: stretch;
+            gap: var(--spacing-sm);
+        }
+    }
+    </style>
+</body>
+</html>
+

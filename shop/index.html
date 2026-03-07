@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HackerSphere Shop - Elite Cyber Tools & Gear</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <script src="products-data.js"></script>
+    <script src="api.js"></script>
+    <script src="store.js" defer></script>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-brand">
+                <a href="/" class="brand-link">
+                    <span class="brand-text">HACKERSPHERE</span>
+                    <span class="brand-accent">SHOP</span>
+                </a>
+            </div>
+            <div class="nav-links">
+                <a href="/" class="nav-link">Home</a>
+                <a href="/academy/" class="nav-link">Academy</a>
+                <div class="cart-container">
+                    <button class="cart-button" id="cart-button">
+                        <span class="cart-icon">🛒</span>
+                        <span class="cart-count" id="cart-count">0</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <h1 class="hero-title">
+                    <span class="hero-main">ELITE CYBER TOOLS</span>
+                    <br>
+                    <span class="hero-accent">& GEAR</span>
+                </h1>
+                <p class="hero-subtitle">
+                    Professional-grade security tools, hardware, and tactical gear for the modern cybersecurity elite.
+                    Engineered for red teams, defensive operations, and digital nomads.
+                </p>
+                <div class="hero-cta">
+                    <a href="#featured" class="cta-button primary">Explore Collection</a>
+                    <a href="#categories" class="cta-button secondary">Browse Categories</a>
+                </div>
+                <div class="hero-stats">
+                    <div class="stat">
+                        <span class="stat-number">600+</span>
+                        <span class="stat-label">Tools Available</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-number">12</span>
+                        <span class="stat-label">Categories</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-number">24/7</span>
+                        <span class="stat-label">Support</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="hero-bg">
+            <div class="matrix-overlay"></div>
+        </div>
+    </section>
+
+    <!-- Featured Products -->
+    <section id="featured" class="section">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Featured Elite Gear</h2>
+                <p class="section-subtitle">Hand-picked premium tools and equipment trusted by cybersecurity professionals worldwide</p>
+            </div>
+            <div class="products-grid" id="featured-products">
+                <!-- Products will be loaded here -->
+            </div>
+            <div class="section-cta">
+                <button class="cta-button primary" id="load-more-featured">Load More Products</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Categories -->
+    <section id="categories" class="section alt-bg">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Shop by Category</h2>
+                <p class="section-subtitle">Discover specialized tools and gear for every cybersecurity domain</p>
+            </div>
+            <div class="categories-grid" id="categories-grid">
+                <!-- Categories will be loaded here -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Search & Filters -->
+    <section class="section">
+        <div class="container">
+            <div class="search-container">
+                <div class="search-box">
+                    <input type="text" id="search-input" placeholder="Search for tools, software, hardware..." class="search-input">
+                    <button class="search-button" id="search-button">
+                        <span class="search-icon">🔍</span>
+                    </button>
+                </div>
+                <div class="filters">
+                    <select id="category-filter" class="filter-select">
+                        <option value="">All Categories</option>
+                        <!-- Categories will be loaded here -->
+                    </select>
+                    <select id="sort-filter" class="filter-select">
+                        <option value="newest">Newest First</option>
+                        <option value="price_asc">Price: Low to High</option>
+                        <option value="price_desc">Price: High to Low</option>
+                        <option value="name">Name A-Z</option>
+                        <option value="rating">Highest Rated</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- All Products Section -->
+    <section class="section">
+        <div class="container">
+            <div class="products-grid" id="all-products">
+                <!-- All products will be loaded here -->
+            </div>
+            <div class="loading" id="loading-indicator" style="display: none;">
+                <div class="loading-spinner"></div>
+                <span>Loading products...</span>
+            </div>
+            <div class="pagination" id="pagination">
+                <!-- Pagination will be loaded here -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Newsletter Signup -->
+    <section class="section newsletter-section">
+        <div class="container">
+            <div class="newsletter-content">
+                <h3 class="newsletter-title">Join the Elite Network</h3>
+                <p class="newsletter-subtitle">Get exclusive access to new tools, security updates, and professional discounts</p>
+                <form class="newsletter-form" id="newsletter-form">
+                    <input type="email" placeholder="Enter your secure email" class="newsletter-input" required>
+                    <button type="submit" class="newsletter-button">Subscribe</button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <h3 class="footer-logo">HACKERSPHERE</h3>
+                    <p class="footer-tagline">Empowering cybersecurity professionals with elite tools and knowledge</p>
+                    <div class="footer-social">
+                        <a href="#" class="social-link">🐦</a>
+                        <a href="#" class="social-link">💼</a>
+                        <a href="#" class="social-link">🎥</a>
+                        <a href="#" class="social-link">💻</a>
+                    </div>
+                </div>
+                <div class="footer-links">
+                    <div class="footer-column">
+                        <h4>Products</h4>
+                        <a href="#software">Software</a>
+                        <a href="#hardware">Hardware</a>
+                        <a href="#merchandise">Merchandise</a>
+                        <a href="#tools">Tools</a>
+                    </div>
+                    <div class="footer-column">
+                        <h4>Support</h4>
+                        <a href="/support">Documentation</a>
+                        <a href="/contact">Contact Us</a>
+                        <a href="/shipping">Shipping Info</a>
+                        <a href="/returns">Returns</a>
+                    </div>
+                    <div class="footer-column">
+                        <h4>Company</h4>
+                        <a href="/about">About Us</a>
+                        <a href="/blog">Security Blog</a>
+                        <a href="/careers">Careers</a>
+                        <a href="/partners">Partners</a>
+                    </div>
+                    <div class="footer-column">
+                        <h4>Legal</h4>
+                        <a href="/privacy">Privacy Policy</a>
+                        <a href="/terms">Terms of Service</a>
+                        <a href="/compliance">Compliance</a>
+                        <a href="/security">Security</a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 HackerSphere. All rights reserved. | Elite cybersecurity tools and training for professionals.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Cart Sidebar -->
+    <div class="cart-sidebar" id="cart-sidebar">
+        <div class="cart-header">
+            <h3>Your Cart</h3>
+            <button class="close-cart" id="close-cart">&times;</button>
+        </div>
+        <div class="cart-items" id="cart-items">
+            <!-- Cart items will be loaded here -->
+            <div class="empty-cart">
+                <span class="empty-cart-icon">🛒</span>
+                <p>Your cart is empty</p>
+                <p class="empty-cart-subtext">Add some elite gear to get started</p>
+            </div>
+        </div>
+        <div class="cart-footer" id="cart-footer" style="display: none;">
+            <div class="cart-total">
+                <span>Total:</span>
+                <span id="cart-total">$0.00</span>
+            </div>
+            <button class="checkout-button" id="checkout-button">Proceed to Checkout</button>
+        </div>
+    </div>
+
+    <!-- Product Quick View Modal -->
+    <div class="modal" id="product-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modal-title">Product Details</h3>
+                <button class="close-modal" id="close-modal">&times;</button>
+            </div>
+            <div class="modal-body" id="modal-body">
+                <!-- Product details will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Overlay for mobile menu and modals -->
+    <div class="overlay" id="overlay"></div>
+
+    <!-- Scripts -->
+    <script src="../matrix.js"></script>
+</body>
+</html>

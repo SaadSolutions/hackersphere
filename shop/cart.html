@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shopping Cart - HackerSphere Shop</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <script src="products-data.js"></script>
+    <script src="api.js"></script>
+    <script src="utils.js"></script>
+    <script src="cart.js" defer></script>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-brand">
+                <a href="/" class="brand-link">
+                    <span class="brand-text">HACKERSPHERE</span>
+                    <span class="brand-accent">SHOP</span>
+                </a>
+            </div>
+            <div class="nav-links">
+                <a href="index.html" class="nav-link">Home</a>
+                <a href="/academy/" class="nav-link">Academy</a>
+                <div class="cart-container">
+                    <button class="cart-button" id="cart-button">
+                        <span class="cart-icon">🛒</span>
+                        <span class="cart-count" id="cart-count">0</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Cart Header -->
+    <section class="section">
+        <div class="container">
+            <div class="cart-header-section">
+                <h1 class="section-title">Shopping Cart</h1>
+                <p class="cart-subtitle">Review and manage your elite cyber gear</p>
+                <div class="cart-breadcrumb">
+                    <span class="breadcrumb-item">Shop</span>
+                    <span class="breadcrumb-separator">></span>
+                    <span class="breadcrumb-item active">Cart</span>
+                    <span class="breadcrumb-separator">></span>
+                    <span class="breadcrumb-item">Checkout</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Cart Content -->
+    <section class="section" id="cart-section">
+        <div class="container">
+            <div class="cart-layout">
+                <!-- Cart Items -->
+                <div class="cart-items-section">
+                    <div class="cart-items-container" id="cart-items-container">
+                        <!-- Cart items will be loaded here -->
+                        <div class="empty-cart-full">
+                            <div class="empty-cart-content">
+                                <span class="empty-cart-icon-large">🛒</span>
+                                <h2>Your cart is empty</h2>
+                                <p>Discover our collection of elite cyber tools and gear</p>
+                                <a href="index.html" class="cta-button primary">Explore Products</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Continue Shopping -->
+                    <div class="cart-actions">
+                        <a href="index.html" class="continue-shopping">
+                            <span class="continue-icon">←</span>
+                            Continue Shopping
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Cart Summary -->
+                <div class="cart-summary-section">
+                    <div class="cart-summary">
+                        <h3 class="summary-title">Order Summary</h3>
+
+                        <div class="summary-rows" id="summary-rows">
+                            <div class="summary-row">
+                                <span>Subtotal</span>
+                                <span id="summary-subtotal">$0.00</span>
+                            </div>
+                            <div class="summary-row">
+                                <span>Tax</span>
+                                <span id="summary-tax">$0.00</span>
+                            </div>
+                            <div class="summary-row">
+                                <span>Shipping</span>
+                                <span id="summary-shipping">$0.00</span>
+                            </div>
+                            <div class="summary-divider"></div>
+                            <div class="summary-row total-row">
+                                <span>Total</span>
+                                <span id="summary-total">$0.00</span>
+                            </div>
+                        </div>
+
+                        <div class="shipping-notice" id="shipping-notice">
+                            <span class="shipping-icon">🚚</span>
+                            Add $<span id="free-shipping-amount">50.00</span> more for free shipping
+                        </div>
+
+                        <button class="checkout-button-large" id="checkout-button">
+                            Proceed to Checkout
+                        </button>
+
+                        <div class="cart-summary-footer">
+                            <div class="secure-checkout">
+                                <span class="secure-icon">🔒</span>
+                                <span>Secure Checkout</span>
+                            </div>
+                            <div class="payment-methods">
+                                <span class="payment-label">We accept:</span>
+                                <div class="payment-icons">
+                                    <span class="payment-icon">💳</span>
+                                    <span class="payment-icon">💰</span>
+                                    <span class="payment-icon">₿</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Promo Code -->
+                    <div class="promo-section">
+                        <h4 class="promo-title">Have a promo code?</h4>
+                        <div class="promo-form">
+                            <input type="text" id="promo-code" placeholder="Enter promo code" class="promo-input">
+                            <button id="promo-apply" class="promo-button">Apply</button>
+                        </div>
+                    </div>
+
+                    <!-- Cart Recommendations -->
+                    <div class="cart-recommendations">
+                        <h4 class="recommendations-title">Frequently Bought Together</h4>
+                        <div class="recommendations-grid" id="cart-recommendations">
+                            <!-- Recommendations will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Cart Sidebar (for mobile/additional interactions) -->
+    <div class="cart-sidebar" id="cart-sidebar">
+        <div class="cart-header">
+            <h3>Your Cart</h3>
+            <button class="close-cart" id="close-cart">&times;</button>
+        </div>
+        <div class="cart-items" id="sidebar-cart-items">
+            <!-- Cart items for sidebar will be loaded here -->
+        </div>
+        <div class="cart-footer" id="sidebar-cart-footer" style="display: none;">
+            <div class="cart-total">
+                <span>Total:</span>
+                <span id="sidebar-cart-total">$0.00</span>
+            </div>
+            <button class="checkout-button" id="sidebar-checkout-button">Proceed to Checkout</button>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <h3 class="footer-logo">HACKERSPHERE</h3>
+                    <p class="footer-tagline">Empowering cybersecurity professionals with elite tools and knowledge</p>
+                    <div class="footer-social">
+                        <a href="#" class="social-link">🐦</a>
+                        <a href="#" class="social-link">💼</a>
+                        <a href="#" class="social-link">🎥</a>
+                        <a href="#" class="social-link">💻</a>
+                    </div>
+                </div>
+                <div class="footer-links">
+                    <div class="footer-column">
+                        <h4>Products</h4>
+                        <a href="index.html#software">Software</a>
+                        <a href="index.html#hardware">Hardware</a>
+                        <a href="index.html#merchandise">Merchandise</a>
+                        <a href="index.html#tools">Tools</a>
+                    </div>
+                    <div class="footer-column">
+                        <h4>Support</h4>
+                        <a href="/support">Documentation</a>
+                        <a href="/contact">Contact Us</a>
+                        <a href="/shipping">Shipping Info</a>
+                        <a href="/returns">Returns</a>
+                    </div>
+                    <div class="footer-column">
+                        <h4>Company</h4>
+                        <a href="/about">About Us</a>
+                        <a href="/blog">Security Blog</a>
+                        <a href="/careers">Careers</a>
+                        <a href="/partners">Partners</a>
+                    </div>
+                    <div class="footer-column">
+                        <h4>Legal</h4>
+                        <a href="/privacy">Privacy Policy</a>
+                        <a href="/terms">Terms of Service</a>
+                        <a href="/compliance">Compliance</a>
+                        <a href="/security">Security</a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 HackerSphere. All rights reserved. | Elite cybersecurity tools and training for professionals.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Overlay for modals -->
+    <div class="overlay" id="overlay"></div>
+
+    <!-- Scripts -->
+    <script src="../matrix.js"></script>
+</body>
+</html>

@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HackerSphere - Lesson Viewer</title>
+
+    <!-- Preload critical CSS -->
+    <link rel="preload" href="styles.css" as="style">
+    <link rel="preload" href="academy/styles.css" as="style">
+
+    <!-- Load styles -->
+    <link rel="stylesheet" href="../styles.css">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Hacker Matrix Rain Background -->
+    <canvas id="matrix-canvas"></canvas>
+
+    <!-- Header -->
+    <header class="academy-header">
+        <nav class="academy-nav academy-container">
+            <a href="/" class="academy-title">HACKERSPHERE</a>
+
+            <div class="academy-nav-links">
+                <a href="/academy/catalog" class="academy-nav-link" data-page="catalog">Catalog</a>
+                <a href="/academy/dashboard" class="academy-nav-link" data-page="dashboard">Dashboard</a>
+                <button id="auth-button" class="academy-button small secondary">Login</button>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main class="academy-main">
+        <!-- Lesson Progress Bar -->
+        <div id="lesson-progress-container" class="lesson-progress-container">
+            <div class="academy-container">
+                <div class="academy-progress-bar">
+                    <div id="lesson-progress-fill" class="academy-progress-fill" style="width: 0%"></div>
+                </div>
+                <div id="lesson-progress-text" class="progress-text">
+                    Lesson 1 of 5 • 0% Complete
+                </div>
+            </div>
+        </div>
+
+        <!-- Lesson Header -->
+        <section class="academy-section">
+            <div class="academy-container">
+                <div id="lesson-header" class="lesson-header">
+                    <!-- Lesson title and navigation will be populated here -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Lesson Content -->
+        <section class="academy-section lesson-content-section">
+            <div class="academy-container">
+                <div id="lesson-content" class="lesson-content">
+                    <!-- Lesson content blocks will be populated here -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Lesson Navigation -->
+        <section class="academy-section">
+            <div class="academy-container">
+                <div id="lesson-navigation" class="lesson-navigation">
+                    <!-- Previous/Next navigation will be populated here -->
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Scripts -->
+    <script src="../code.js"></script>
+    <script src="api.js"></script>
+    <script src="auth.js"></script>
+    <script src="utils.js"></script>
+    <script src="lessons.js"></script>
+
+    <script>
+        // Initialize lesson viewer
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Check authentication
+            const isAuthenticated = window.AcademyAPI.isAuthenticated();
+
+            // Require authentication for lesson viewing
+            if (!isAuthenticated) {
+                showAuthRequired();
+                return;
+            }
+
+            // Update auth button
+            updateAuthButton();
+
+            // Handle auth button clicks
+            document.getElementById('auth-button').addEventListener('click', async () => {
+                await window.AcademyAuth.logout();
+                updateAuthButton();
+                window.location.href = '/academy';
+            });
+
+            // Get lesson ID from URL
+            const lessonId = getLessonIdFromURL();
+
+            if (!lessonId) {
+                showErrorPage('Lesson not found');
+                return;
+            }
+
+            // Initialize lesson viewer
+            await LessonViewer.init(lessonId);
+
+            function updateAuthButton() {
+                const authButton = document.getElementById('auth-button');
+                const isAuthenticated = window.AcademyAPI.isAuthenticated();
+
+                authButton.textContent = isAuthenticated ? 'Logout' : 'Login';
+                authButton.classList.toggle('secondary', !isAuthenticated);
+            }
+
+            function getLessonIdFromURL() {
+                // Check URL parameter first
+                const lessonId = Utils.getURLParam('id');
+                if (lessonId) return lessonId;
+
+                // Check router state
+                const path = window.location.pathname;
+                const match = path.match(/\/academy\/lesson\/([^\/]+)/);
+                return match ? match[1] : null;
+            }
+
+            function showAuthRequired() {
+                const contentElement = document.getElementById('lesson-content');
+                contentElement.innerHTML = `
+                    <div class="text-center" style="padding: var(--spacing-xxl);">
+                        <h2 style="color: var(--warning-orange); margin-bottom: var(--spacing-lg);">
+                            Authentication Required
+                        </h2>
+                        <p style="color: var(--text-secondary); margin-bottom: var(--spacing-lg);">
+                            You need to be logged in to view lesson content.
+                        </p>
+                        <button onclick="window.AcademyAuth.login('demo_user', 'password').then(() => location.reload())" class="academy-button">
+                            Login as Demo User
+                        </button>
+                    </div>
+                `;
+
+                // Hide progress and navigation
+                document.getElementById('lesson-progress-container').style.display = 'none';
+                document.getElementById('lesson-navigation').style.display = 'none';
+            }
+
+            function showErrorPage(message) {
+                const contentElement = document.getElementById('lesson-content');
+                contentElement.innerHTML = `
+                    <div class="text-center" style="padding: var(--spacing-xxl);">
+                        <h2 style="color: var(--error-red); margin-bottom: var(--spacing-lg);">
+                            Error Loading Lesson
+                        </h2>
+                        <p style="color: var(--text-secondary); margin-bottom: var(--spacing-lg);">
+                            ${message}
+                        </p>
+                        <a href="/academy/dashboard" class="academy-button">
+                            Back to Dashboard
+                        </a>
+                    </div>
+                `;
+            }
+        });
+
+        // Keyboard navigation for lessons
+        document.addEventListener('keydown', (e) => {
+            // Left arrow for previous lesson
+            if (e.key === 'ArrowLeft' && !e.target.matches('input, textarea, select')) {
+                const prevBtn = document.querySelector('.lesson-nav-prev:not(:disabled)');
+                if (prevBtn) prevBtn.click();
+            }
+
+            // Right arrow for next lesson
+            if (e.key === 'ArrowRight' && !e.target.matches('input, textarea, select')) {
+                const nextBtn = document.querySelector('.lesson-nav-next:not(:disabled)');
+                if (nextBtn) nextBtn.click();
+            }
+        });
+    </script>
+
+    <style>
+    /* Lesson Progress Bar */
+    .lesson-progress-container {
+        background: var(--hacker-grey);
+        border-bottom: 1px solid var(--matrix-green);
+        padding: var(--spacing-md) 0;
+    }
+
+    .progress-text {
+        text-align: center;
+        margin-top: var(--spacing-sm);
+        color: var(--text-dim);
+        font-family: var(--font-mono);
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    /* Lesson Header */
+    .lesson-header {
+        margin-bottom: var(--spacing-xl);
+        padding: var(--spacing-xl);
+        background: var(--hacker-grey);
+        border: 1px solid var(--matrix-green);
+        border-radius: var(--radius-lg);
+    }
+
+    .lesson-breadcrumbs {
+        margin-bottom: var(--spacing-lg);
+    }
+
+    .lesson-title-section {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        flex-wrap: wrap;
+        gap: var(--spacing-lg);
+    }
+
+    .lesson-info {
+        flex: 1;
+        min-width: 300px;
+    }
+
+    .lesson-title {
+        font-size: 2rem;
+        color: var(--matrix-green);
+        margin-bottom: var(--spacing-md);
+        text-shadow: 0 0 10px var(--matrix-green-glow);
+        font-family: var(--font-mono);
+    }
+
+    .lesson-meta {
+        display: flex;
+        gap: var(--spacing-lg);
+        margin-bottom: var(--spacing-lg);
+        font-family: var(--font-mono);
+        font-size: 0.9rem;
+        color: var(--text-dim);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .lesson-completion {
+        background: var(--matrix-green);
+        color: black;
+        padding: var(--spacing-sm) var(--spacing-md);
+        border-radius: var(--radius-md);
+        font-weight: bold;
+        text-transform: uppercase;
+        font-size: 0.9rem;
+        font-family: var(--font-mono);
+        letter-spacing: 1px;
+    }
+
+    .lesson-completion.completed {
+        background: var(--success-green);
+    }
+
+    /* Content Section */
+    .lesson-content-section {
+        background: linear-gradient(180deg,
+            var(--hacker-black) 0%,
+            rgba(0, 255, 0, 0.02) 50%,
+            var(--hacker-black) 100%);
+    }
+
+    .lesson-content {
+        max-width: 800px;
+        margin: 0 auto;
+        min-height: 400px;
+    }
+
+    /* Lesson Navigation */
+    .lesson-navigation {
+        border-top: 1px solid rgba(0, 255, 0, 0.3);
+        padding-top: var(--spacing-xl);
+        margin-top: var(--spacing-xl);
+    }
+
+    .lesson-nav-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: var(--spacing-lg);
+    }
+
+    .lesson-nav-button {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-sm);
+        min-width: 150px;
+        justify-content: center;
+    }
+
+    .lesson-nav-button:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    .lesson-nav-button:not(:disabled):hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0, 255, 0, 0.3);
+    }
+
+    .lesson-nav-prev::before {
+        content: '←';
+        font-size: 1.2rem;
+    }
+
+    .lesson-nav-next::after {
+        content: '→';
+        font-size: 1.2rem;
+    }
+
+    /* Quiz Styles */
+    .quiz-container {
+        background: var(--hacker-grey-light);
+        border: 2px solid var(--matrix-green);
+        border-radius: var(--radius-lg);
+        padding: var(--spacing-xl);
+        margin: var(--spacing-lg) 0;
+    }
+
+    .quiz-header {
+        text-align: center;
+        margin-bottom: var(--spacing-lg);
+    }
+
+    .quiz-title {
+        font-size: 1.2rem;
+        color: var(--matrix-green);
+        margin-bottom: var(--spacing-sm);
+        font-family: var(--font-mono);
+    }
+
+    .quiz-description {
+        color: var(--text-secondary);
+        font-style: italic;
+    }
+
+    .quiz-questions {
+        display: grid;
+        gap: var(--spacing-lg);
+    }
+
+    .quiz-question {
+        border-bottom: 1px solid rgba(0, 255, 0, 0.3);
+        padding-bottom: var(--spacing-lg);
+    }
+
+    .question-text {
+        font-weight: bold;
+        color: var(--text-primary);
+        margin-bottom: var(--spacing-md);
+    }
+
+    .question-options {
+        display: grid;
+        gap: var(--spacing-sm);
+    }
+
+    .option-label {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-sm);
+        padding: var(--spacing-sm);
+        border: 1px solid rgba(0, 255, 0, 0.3);
+        border-radius: var(--radius-md);
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .option-label:hover {
+        background: rgba(0, 255, 0, 0.1);
+        border-color: var(--matrix-green);
+    }
+
+    .option-radio {
+        margin: 0;
+    }
+
+    .option-text {
+        flex: 1;
+    }
+
+    /* Quiz Results */
+    .quiz-results {
+        margin-top: var(--spacing-lg);
+        padding: var(--spacing-lg);
+        border-radius: var(--radius-lg);
+        text-align: center;
+    }
+
+    .quiz-results.correct {
+        background: rgba(0, 255, 0, 0.1);
+        border: 2px solid var(--success-green);
+    }
+
+    .quiz-results.incorrect {
+        background: rgba(255, 68, 68, 0.1);
+        border: 2px solid var(--error-red);
+    }
+
+    .quiz-results-title {
+        font-size: 1.5rem;
+        font-weight: bold;
+        margin-bottom: var(--spacing-md);
+    }
+
+    .quiz-results.correct .quiz-results-title {
+        color: var(--success-green);
+    }
+
+    .quiz-results.incorrect .quiz-results-title {
+        color: var(--error-red);
+    }
+
+    .quiz-feedback {
+        color: var(--text-secondary);
+        font-style: italic;
+        margin-bottom: var(--spacing-md);
+    }
+
+    .quiz-submit-btn {
+        margin-top: var(--spacing-md);
+    }
+
+    /* Code Blocks */
+    .lesson-code-block {
+        position: relative;
+        margin: var(--spacing-lg) 0;
+    }
+
+    .code-block-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: var(--spacing-sm) var(--spacing-md);
+        background: var(--matrix-green);
+        color: black;
+        font-family: var(--font-mono);
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        border-radius: var(--radius-md) var(--radius-md) 0 0;
+    }
+
+    .copy-button {
+        background: none;
+        border: none;
+        color: black;
+        cursor: pointer;
+        padding: 2px 6px;
+        border-radius: 3px;
+        font-size: 0.8rem;
+        text-transform: lowercase;
+    }
+
+    .copy-button:hover {
+        background: rgba(0, 0, 0, 0.1);
+    }
+
+    .copy-button.copied {
+        background: var(--success-green);
+        color: white;
+    }
+
+    /* Scroll progress indicator */
+    .scroll-progress {
+        position: fixed;
+        top: 100px;
+        right: 20px;
+        width: 4px;
+        height: calc(100vh - 120px);
+        background: var(--hacker-grey);
+        border-radius: 2px;
+        z-index: 100;
+    }
+
+    .scroll-progress-fill {
+        width: 100%;
+        height: 0%;
+        background: var(--matrix-green);
+        border-radius: 2px;
+        transition: height 0.3s ease;
+    }
+
+    /* Keyboard navigation hints */
+    .keyboard-hints {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background: var(--hacker-grey);
+        border: 1px solid var(--matrix-green);
+        border-radius: var(--radius-md);
+        padding: var(--spacing-md);
+        font-family: var(--font-mono);
+        font-size: 0.8rem;
+        color: var(--text-dim);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .keyboard-hints h4 {
+        margin: 0 0 var(--spacing-sm) 0;
+        color: var(--matrix-green);
+        font-size: 0.9rem;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .lesson-title-section {
+            flex-direction: column;
+            gap: var(--spacing-md);
+        }
+
+        .lesson-meta {
+            flex-direction: column;
+            gap: var(--spacing-sm);
+        }
+
+        .lesson-nav-container {
+            flex-direction: column;
+            gap: var(--spacing-md);
+        }
+
+        .lesson-nav-button {
+            width: 100%;
+        }
+
+        .keyboard-hints {
+            bottom: 10px;
+            right: 10px;
+            padding: var(--spacing-sm);
+            font-size: 0.7rem;
+        }
+
+        .scroll-progress {
+            display: none;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .lesson-header {
+            padding: var(--spacing-md);
+        }
+
+        .lesson-title {
+            font-size: 1.5rem;
+        }
+
+        .quiz-container {
+            padding: var(--spacing-md);
+        }
+
+        .lesson-content {
+            padding: 0 var(--spacing-sm);
+        }
+    }
+
+    /* Accessibility improvements */
+    @media (prefers-reduced-motion: reduce) {
+        .lesson-nav-button:not(:disabled):hover {
+            transform: none;
+        }
+
+        .option-label:hover {
+            background: none;
+            border-color: rgba(0, 255, 0, 0.3);
+        }
+    }
+
+    /* Focus styles for keyboard navigation */
+    .lesson-nav-button:focus,
+    .option-label:focus,
+    .copy-button:focus {
+        outline: 2px solid var(--matrix-green);
+        outline-offset: 2px;
+    }
+
+    /* High contrast mode support */
+    @media (prefers-contrast: high) {
+        .lesson-content {
+            background: var(--hacker-black);
+            border: 1px solid var(--matrix-green);
+            padding: var(--spacing-lg);
+            border-radius: var(--radius-lg);
+        }
+    }
+    </style>
+</body>
+</html>
