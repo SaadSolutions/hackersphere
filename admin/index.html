@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - HackerSphere</title>
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        :root {
+            --green: #00ff41;
+            --green-dim: rgba(0,255,65,0.15);
+            --green-glow: rgba(0,255,65,0.4);
+            --bg: #050a05;
+            --surface: #0a120a;
+            --border: rgba(0,255,65,0.15);
+            --text: #e0ffe0;
+            --text-dim: #7a9e7a;
+            --danger: #ff4444;
+            --warning: #ffaa00;
+            --info: #00aaff;
+        }
+        body { background: var(--bg); color: var(--text); font-family: 'Courier New', monospace; min-height: 100vh; }
+        .layout { display: grid; grid-template-columns: 240px 1fr; min-height: 100vh; }
+        .sidebar { background: var(--surface); border-right: 1px solid var(--border); padding: 0; display: flex; flex-direction: column; }
+        .sidebar-brand { padding: 24px 20px; border-bottom: 1px solid var(--border); }
+        .sidebar-brand span { color: var(--green); font-size: 1.1rem; font-weight: 700; letter-spacing: 2px; }
+        .sidebar-brand small { display: block; color: var(--text-dim); font-size: 0.7rem; letter-spacing: 1px; margin-top: 2px; }
+        .sidebar-nav { padding: 16px 0; flex: 1; }
+        .nav-section { padding: 8px 16px; color: var(--text-dim); font-size: 0.7rem; letter-spacing: 2px; text-transform: uppercase; margin-top: 8px; }
+        .nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 20px; color: var(--text-dim); cursor: pointer; transition: all 0.2s; border: none; background: none; width: 100%; text-align: left; font-family: inherit; font-size: 0.9rem; text-decoration: none; }
+        .nav-item:hover { background: var(--green-dim); color: var(--green); }
+        .nav-item.active { background: var(--green-dim); color: var(--green); border-left: 3px solid var(--green); }
+        .nav-item .icon { width: 18px; text-align: center; }
+        .sidebar-footer { padding: 16px 20px; border-top: 1px solid var(--border); }
+        .admin-info { color: var(--text-dim); font-size: 0.8rem; }
+        .admin-info strong { color: var(--text); display: block; }
+        .main { overflow-y: auto; }
+        .topbar { background: var(--surface); border-bottom: 1px solid var(--border); padding: 16px 28px; display: flex; align-items: center; justify-content: space-between; }
+        .topbar-title { color: var(--green); font-size: 1.1rem; font-weight: 700; letter-spacing: 1px; }
+        .topbar-actions { display: flex; gap: 10px; }
+        .btn { padding: 8px 16px; border-radius: 6px; cursor: pointer; font-family: monospace; font-size: 0.85rem; border: 1px solid; transition: all 0.2s; }
+        .btn-primary { background: var(--green); color: #000; border-color: var(--green); font-weight: 700; }
+        .btn-primary:hover { background: #00cc33; }
+        .btn-outline { background: transparent; color: var(--green); border-color: var(--green); }
+        .btn-outline:hover { background: var(--green-dim); }
+        .btn-danger { background: transparent; color: var(--danger); border-color: var(--danger); }
+        .btn-sm { padding: 5px 10px; font-size: 0.75rem; }
+        .content { padding: 28px; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; margin-bottom: 28px; }
+        .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 20px; }
+        .stat-label { color: var(--text-dim); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+        .stat-value { color: var(--green); font-size: 2rem; font-weight: 700; }
+        .stat-sub { color: var(--text-dim); font-size: 0.8rem; margin-top: 4px; }
+        .panel { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; margin-bottom: 20px; }
+        .panel-header { padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+        .panel-title { color: var(--green); font-size: 0.9rem; letter-spacing: 1px; text-transform: uppercase; }
+        .panel-body { padding: 0; }
+        .data-table { width: 100%; border-collapse: collapse; }
+        .data-table th { padding: 10px 16px; text-align: left; color: var(--text-dim); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid var(--border); font-weight: 600; }
+        .data-table td { padding: 12px 16px; color: var(--text); font-size: 0.85rem; border-bottom: 1px solid rgba(0,255,65,0.05); vertical-align: middle; }
+        .data-table tr:last-child td { border-bottom: none; }
+        .data-table tr:hover td { background: var(--green-dim); }
+        .badge { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 0.75rem; font-weight: 700; }
+        .badge-green { background: rgba(0,255,65,0.1); color: var(--green); border: 1px solid rgba(0,255,65,0.3); }
+        .badge-blue { background: rgba(0,170,255,0.1); color: var(--info); border: 1px solid rgba(0,170,255,0.3); }
+        .badge-yellow { background: rgba(255,170,0,0.1); color: var(--warning); border: 1px solid rgba(255,170,0,0.3); }
+        .badge-red { background: rgba(255,68,68,0.1); color: var(--danger); border: 1px solid rgba(255,68,68,0.3); }
+        .search-bar { display: flex; gap: 10px; margin-bottom: 16px; }
+        .search-bar input { flex: 1; background: rgba(0,0,0,0.4); border: 1px solid var(--border); color: var(--text); padding: 8px 14px; border-radius: 6px; font-family: monospace; }
+        .search-bar input:focus { outline: none; border-color: var(--green); }
+        .tab-view { display: none; }
+        .tab-view.active { display: block; }
+        .form-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 100; align-items: center; justify-content: center; }
+        .form-modal.open { display: flex; }
+        .modal-box { background: var(--surface); border: 1px solid var(--green); border-radius: 12px; padding: 28px; width: 100%; max-width: 520px; max-height: 90vh; overflow-y: auto; }
+        .modal-title { color: var(--green); font-size: 1.1rem; margin-bottom: 20px; }
+        .modal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .modal-full { grid-column: 1/-1; }
+        .mf-group label { color: var(--text-dim); font-size: 0.8rem; display: block; margin-bottom: 4px; }
+        .mf-group input, .mf-group select, .mf-group textarea { width: 100%; background: rgba(0,0,0,0.5); border: 1px solid var(--border); color: var(--text); padding: 8px 10px; border-radius: 6px; font-family: monospace; font-size: 0.85rem; }
+        .mf-group input:focus, .mf-group select:focus { outline: none; border-color: var(--green); }
+        .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; }
+        .pagination { display: flex; gap: 6px; padding: 12px 16px; justify-content: flex-end; border-top: 1px solid var(--border); }
+        .page-btn { padding: 5px 10px; background: transparent; border: 1px solid var(--border); color: var(--text-dim); border-radius: 4px; cursor: pointer; font-family: monospace; font-size: 0.8rem; }
+        .page-btn.active, .page-btn:hover { border-color: var(--green); color: var(--green); }
+        .toast-container { position: fixed; bottom: 20px; right: 20px; display: flex; flex-direction: column; gap: 8px; z-index: 1000; }
+        .toast { background: var(--surface); border: 1px solid var(--green); padding: 10px 16px; border-radius: 6px; color: var(--green); font-size: 0.85rem; animation: slideIn 0.3s ease; }
+        .toast.error { border-color: var(--danger); color: var(--danger); }
+        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        @media (max-width: 768px) { .layout { grid-template-columns: 1fr; } .sidebar { display: none; } .stats-grid { grid-template-columns: 1fr 1fr; } }
+    </style>
+</head>
+<body>
+
+<div class="layout">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-brand">
+            <span>HACKERSPHERE</span>
+            <small>ADMIN CONSOLE</small>
+        </div>
+        <nav class="sidebar-nav">
+            <div class="nav-section">Overview</div>
+            <button class="nav-item active" onclick="showTab('dashboard')"><span class="icon">📊</span> Dashboard</button>
+
+            <div class="nav-section">Academy</div>
+            <button class="nav-item" onclick="showTab('courses')"><span class="icon">🎓</span> Courses</button>
+
+            <div class="nav-section">Shop</div>
+            <button class="nav-item" onclick="showTab('products')"><span class="icon">🛒</span> Products</button>
+            <button class="nav-item" onclick="showTab('orders')"><span class="icon">📦</span> Orders</button>
+
+            <div class="nav-section">System</div>
+            <button class="nav-item" onclick="showTab('users')"><span class="icon">👥</span> Users</button>
+            <a class="nav-item" href="/"><span class="icon">🌐</span> View Site</a>
+        </nav>
+        <div class="sidebar-footer">
+            <div class="admin-info">
+                <strong id="admin-name">Admin</strong>
+                <span>Administrator</span>
+            </div>
+            <button class="btn btn-outline btn-sm" onclick="logout()" style="margin-top:10px;width:100%;">LOGOUT</button>
+        </div>
+    </aside>
+
+    <!-- Main -->
+    <div class="main">
+        <div class="topbar">
+            <div class="topbar-title" id="topbar-title">DASHBOARD</div>
+            <div class="topbar-actions">
+                <button class="btn btn-outline btn-sm" onclick="refreshData()">↻ REFRESH</button>
+            </div>
+        </div>
+
+        <div class="content">
+
+            <!-- Dashboard Tab -->
+            <div class="tab-view active" id="tab-dashboard">
+                <div class="stats-grid" id="stats-grid">
+                    <div class="stat-card"><div class="stat-label">Total Users</div><div class="stat-value" id="stat-users">—</div></div>
+                    <div class="stat-card"><div class="stat-label">Courses</div><div class="stat-value" id="stat-courses">—</div></div>
+                    <div class="stat-card"><div class="stat-label">Products</div><div class="stat-value" id="stat-products">—</div></div>
+                    <div class="stat-card"><div class="stat-label">Orders</div><div class="stat-value" id="stat-orders">—</div></div>
+                    <div class="stat-card"><div class="stat-label">Revenue</div><div class="stat-value" id="stat-revenue">—</div></div>
+                </div>
+                <div class="panel">
+                    <div class="panel-header"><span class="panel-title">Recent Orders</span></div>
+                    <div class="panel-body">
+                        <table class="data-table" id="recent-orders-table">
+                            <thead><tr>
+                                <th>Order ID</th><th>User</th><th>Total</th><th>Status</th><th>Date</th>
+                            </tr></thead>
+                            <tbody id="recent-orders-body"><tr><td colspan="5" style="text-align:center;color:var(--text-dim);">Loading...</td></tr></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Courses Tab -->
+            <div class="tab-view" id="tab-courses">
+                <div class="search-bar">
+                    <input type="text" id="course-search" placeholder="Search courses..." oninput="debounce(() => loadCourses(), 300)()">
+                    <button class="btn btn-primary" onclick="openCourseModal()">+ ADD COURSE</button>
+                </div>
+                <div class="panel">
+                    <div class="panel-body">
+                        <table class="data-table">
+                            <thead><tr><th>Title</th><th>Difficulty</th><th>Category</th><th>Enrollments</th><th>Featured</th><th>Actions</th></tr></thead>
+                            <tbody id="courses-body"><tr><td colspan="6" style="text-align:center;color:var(--text-dim);">Loading...</td></tr></tbody>
+                        </table>
+                    </div>
+                    <div class="pagination" id="courses-pagination"></div>
+                </div>
+            </div>
+
+            <!-- Products Tab -->
+            <div class="tab-view" id="tab-products">
+                <div class="search-bar">
+                    <input type="text" id="product-search" placeholder="Search products...">
+                    <button class="btn btn-primary" onclick="openProductModal()">+ ADD PRODUCT</button>
+                </div>
+                <div class="panel">
+                    <div class="panel-body">
+                        <table class="data-table">
+                            <thead><tr><th>Name</th><th>Price</th><th>Category</th><th>Stock</th><th>Status</th><th>Actions</th></tr></thead>
+                            <tbody id="products-body"><tr><td colspan="6" style="text-align:center;color:var(--text-dim);">Loading...</td></tr></tbody>
+                        </table>
+                    </div>
+                    <div class="pagination" id="products-pagination"></div>
+                </div>
+            </div>
+
+            <!-- Orders Tab -->
+            <div class="tab-view" id="tab-orders">
+                <div class="search-bar">
+                    <select id="order-status-filter" onchange="loadOrders()">
+                        <option value="">All Statuses</option>
+                        <option value="pending">Pending</option>
+                        <option value="processing">Processing</option>
+                        <option value="shipped">Shipped</option>
+                        <option value="delivered">Delivered</option>
+                        <option value="cancelled">Cancelled</option>
+                    </select>
+                </div>
+                <div class="panel">
+                    <div class="panel-body">
+                        <table class="data-table">
+                            <thead><tr><th>Order ID</th><th>User</th><th>Total</th><th>Payment</th><th>Status</th><th>Date</th><th>Actions</th></tr></thead>
+                            <tbody id="orders-body"><tr><td colspan="7" style="text-align:center;color:var(--text-dim);">Loading...</td></tr></tbody>
+                        </table>
+                    </div>
+                    <div class="pagination" id="orders-pagination"></div>
+                </div>
+            </div>
+
+            <!-- Users Tab -->
+            <div class="tab-view" id="tab-users">
+                <div class="search-bar">
+                    <input type="text" id="user-search" placeholder="Search users by email or username..." oninput="debounce(() => loadUsers(), 300)()">
+                </div>
+                <div class="panel">
+                    <div class="panel-body">
+                        <table class="data-table">
+                            <thead><tr><th>Username</th><th>Email</th><th>Role</th><th>Status</th><th>Joined</th><th>Actions</th></tr></thead>
+                            <tbody id="users-body"><tr><td colspan="6" style="text-align:center;color:var(--text-dim);">Loading...</td></tr></tbody>
+                        </table>
+                    </div>
+                    <div class="pagination" id="users-pagination"></div>
+                </div>
+            </div>
+
+        </div><!-- /content -->
+    </div><!-- /main -->
+</div><!-- /layout -->
+
+<!-- Course Modal -->
+<div class="form-modal" id="course-modal">
+    <div class="modal-box">
+        <div class="modal-title">ADD / EDIT COURSE</div>
+        <input type="hidden" id="course-id">
+        <div class="modal-grid">
+            <div class="mf-group modal-full"><label>Title *</label><input type="text" id="course-title"></div>
+            <div class="mf-group modal-full"><label>Slug *</label><input type="text" id="course-slug" placeholder="my-course-slug"></div>
+            <div class="mf-group modal-full"><label>Short Description</label><input type="text" id="course-short-desc"></div>
+            <div class="mf-group modal-full"><label>Description</label><textarea id="course-desc" rows="4"></textarea></div>
+            <div class="mf-group"><label>Difficulty</label>
+                <select id="course-difficulty"><option value="beginner">Beginner</option><option value="intermediate">Intermediate</option><option value="advanced">Advanced</option></select>
+            </div>
+            <div class="mf-group"><label>Category</label><input type="text" id="course-category" placeholder="Network Security"></div>
+            <div class="mf-group"><label>Duration (hours)</label><input type="number" id="course-duration" step="0.5" min="0"></div>
+            <div class="mf-group"><label>Price ($)</label><input type="number" id="course-price" step="0.01" min="0" value="0"></div>
+            <div class="mf-group modal-full"><label>Thumbnail URL</label><input type="url" id="course-thumbnail"></div>
+            <div class="mf-group"><label><input type="checkbox" id="course-featured"> Featured</label></div>
+            <div class="mf-group"><label><input type="checkbox" id="course-published" checked> Published</label></div>
+        </div>
+        <div class="modal-actions">
+            <button class="btn btn-outline" onclick="closeCourseModal()">CANCEL</button>
+            <button class="btn btn-primary" onclick="saveCourse()">SAVE</button>
+        </div>
+    </div>
+</div>
+
+<!-- Product Modal -->
+<div class="form-modal" id="product-modal">
+    <div class="modal-box">
+        <div class="modal-title">ADD / EDIT PRODUCT</div>
+        <input type="hidden" id="product-id">
+        <div class="modal-grid">
+            <div class="mf-group modal-full"><label>Name *</label><input type="text" id="product-name"></div>
+            <div class="mf-group modal-full"><label>Slug *</label><input type="text" id="product-slug"></div>
+            <div class="mf-group modal-full"><label>Short Description</label><input type="text" id="product-short-desc"></div>
+            <div class="mf-group modal-full"><label>Description</label><textarea id="product-desc" rows="4"></textarea></div>
+            <div class="mf-group"><label>Price *</label><input type="number" id="product-price" step="0.01" min="0"></div>
+            <div class="mf-group"><label>Compare Price</label><input type="number" id="product-compare-price" step="0.01" min="0"></div>
+            <div class="mf-group"><label>Category</label><input type="text" id="product-category"></div>
+            <div class="mf-group"><label>Stock Quantity</label><input type="number" id="product-stock" min="0"></div>
+            <div class="mf-group"><label><input type="checkbox" id="product-featured"> Featured</label></div>
+            <div class="mf-group"><label><input type="checkbox" id="product-active" checked> Active</label></div>
+        </div>
+        <div class="modal-actions">
+            <button class="btn btn-outline" onclick="closeProductModal()">CANCEL</button>
+            <button class="btn btn-primary" onclick="saveProduct()">SAVE</button>
+        </div>
+    </div>
+</div>
+
+<!-- Update Order Status Modal -->
+<div class="form-modal" id="order-modal">
+    <div class="modal-box">
+        <div class="modal-title">UPDATE ORDER</div>
+        <input type="hidden" id="edit-order-id">
+        <div class="mf-group" style="margin-bottom:12px;"><label>Status</label>
+            <select id="order-status-edit">
+                <option value="pending">Pending</option>
+                <option value="processing">Processing</option>
+                <option value="shipped">Shipped</option>
+                <option value="delivered">Delivered</option>
+                <option value="cancelled">Cancelled</option>
+            </select>
+        </div>
+        <div class="mf-group"><label>Tracking Number</label><input type="text" id="order-tracking"></div>
+        <div class="modal-actions">
+            <button class="btn btn-outline" onclick="closeOrderModal()">CANCEL</button>
+            <button class="btn btn-primary" onclick="saveOrder()">UPDATE</button>
+        </div>
+    </div>
+</div>
+
+<div class="toast-container" id="toast-container"></div>
+
+<script>
+const API = 'http://localhost:5000/api';
+let currentPages = { courses: 1, products: 1, orders: 1, users: 1 };
+
+function getToken() { return localStorage.getItem('academy_token') || localStorage.getItem('shop_token') || ''; }
+function authH() { const t = getToken(); return t ? { 'Content-Type': 'application/json', 'Authorization': `Bearer ${t}` } : { 'Content-Type': 'application/json' }; }
+function logout() { localStorage.removeItem('academy_token'); localStorage.removeItem('shop_token'); window.location.href = '/academy/login.html'; }
+
+function showToast(msg, isError = false) {
+    const c = document.getElementById('toast-container');
+    const t = document.createElement('div');
+    t.className = 'toast' + (isError ? ' error' : '');
+    t.textContent = msg;
+    c.appendChild(t);
+    setTimeout(() => t.remove(), 3500);
+}
+
+function debounce(fn, delay) {
+    let timer;
+    return (...args) => { clearTimeout(timer); timer = setTimeout(() => fn(...args), delay); };
+}
+
+function statusBadge(s) {
+    const map = { pending: 'yellow', processing: 'blue', shipped: 'blue', delivered: 'green', cancelled: 'red', refunded: 'red', paid: 'green', failed: 'red' };
+    return `<span class="badge badge-${map[s] || 'yellow'}">${s}</span>`;
+}
+
+// ─── Tab switching ────────────────────────────────────────────────────────────
+const tabLoaders = { dashboard: loadDashboard, courses: loadCourses, products: loadProducts, orders: loadOrders, users: loadUsers };
+function showTab(name) {
+    document.querySelectorAll('.tab-view').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    document.getElementById(`tab-${name}`).classList.add('active');
+    document.getElementById('topbar-title').textContent = name.toUpperCase();
+    event.currentTarget.classList.add('active');
+    tabLoaders[name]?.();
+}
+
+function refreshData() { const active = document.querySelector('.tab-view.active'); if (active) tabLoaders[active.id.replace('tab-', ')]?.(); }
+
+// ─── Dashboard ────────────────────────────────────────────────────────────────
+async function loadDashboard() {
+    try {
+        const res = await fetch(`${API}/admin/stats`, { headers: authH() });
+        if (res.status === 403) { alert('Admin access required'); logout(); return; }
+        const d = await res.json();
+        document.getElementById('stat-users').textContent = d.totalUsers || 0;
+        document.getElementById('stat-courses').textContent = d.totalCourses || 0;
+        document.getElementById('stat-products').textContent = d.totalProducts || 0;
+        document.getElementById('stat-orders').textContent = d.totalOrders || 0;
+        document.getElementById('stat-revenue').textContent = `$${(d.totalRevenue || 0).toFixed(0)}`;
+        const tbody = document.getElementById('recent-orders-body');
+        tbody.innerHTML = (d.recentOrders || []).map(o => `
+            <tr>
+                <td style="font-family:monospace;">#${o.id.slice(0,8).toUpperCase()}</td>
+                <td>${o.username || o.email}</td>
+                <td style="color:var(--green);font-family:monospace;">$${parseFloat(o.total).toFixed(2)}</td>
+                <td>${statusBadge(o.status)}</td>
+                <td style="color:var(--text-dim);">${new Date(o.created_at).toLocaleDateString()}</td>
+            </tr>`).join('') || '<tr><td colspan="5" style="text-align:center;color:var(--text-dim);">No orders yet</td></tr>';
+    } catch (err) { showToast('Failed to load stats', true); }
+}
+
+// ─── Courses ──────────────────────────────────────────────────────────────────
+async function loadCourses(page = 1) {
+    currentPages.courses = page;
+    const search = document.getElementById('course-search')?.value || '';
+    try {
+        const res = await fetch(`${API}/admin/courses?page=${page}&limit=15&search=${encodeURIComponent(search)}`, { headers: authH() });
+        const d = await res.json();
+        const tbody = document.getElementById('courses-body');
+        tbody.innerHTML = (d.courses || []).map(c => `
+            <tr>
+                <td><div style="font-weight:600;">${c.title}</div><div style="color:var(--text-dim);font-size:0.75rem;">${c.slug}</div></td>
+                <td>${statusBadge(c.difficulty_level)}</td>
+                <td style="color:var(--text-dim);">${c.category || '—'}</td>
+                <td style="color:var(--green);font-family:monospace;">${c.enrollments || 0}</td>
+                <td>${c.is_featured ? '<span style="color:var(--green);">★</span>' : '—'}</td>
+                <td>
+                    <button class="btn btn-outline btn-sm" onclick="editCourse(${JSON.stringify(c).replace(/"/g, '&quot;')})">EDIT</button>
+                    <button class="btn btn-danger btn-sm" onclick="deleteCourse('${c.id}')">DEL</button>
+                </td>
+            </tr>`).join('') || '<tr><td colspan="6" style="text-align:center;color:var(--text-dim);">No courses found</td></tr>';
+        renderPagination('courses-pagination', page, Math.ceil((d.totalCount || 0) / 15), loadCourses);
+    } catch (err) { showToast('Failed to load courses', true); }
+}
+
+function openCourseModal(course = null) {
+    document.getElementById('course-id').value = course?.id || '';
+    document.getElementById('course-title').value = course?.title || '';
+    document.getElementById('course-slug').value = course?.slug || '';
+    document.getElementById('course-short-desc').value = course?.short_description || '';
+    document.getElementById('course-desc').value = course?.description || '';
+    document.getElementById('course-difficulty').value = course?.difficulty_level || 'beginner';
+    document.getElementById('course-category').value = course?.category || '';
+    document.getElementById('course-duration').value = course?.estimated_duration_hours || '';
+    document.getElementById('course-price').value = course?.price || 0;
+    document.getElementById('course-thumbnail').value = course?.thumbnail_url || '';
+    document.getElementById('course-featured').checked = course?.is_featured || false;
+    document.getElementById('course-published').checked = course?.is_published !== false;
+    document.getElementById('course-modal').classList.add('open');
+}
+
+function editCourse(c) { openCourseModal(c); }
+function closeCourseModal() { document.getElementById('course-modal').classList.remove('open'); }
+
+async function saveCourse() {
+    const id = document.getElementById('course-id').value;
+    const body = {
+        title: document.getElementById('course-title').value,
+        slug: document.getElementById('course-slug').value,
+        shortDescription: document.getElementById('course-short-desc').value,
+        description: document.getElementById('course-desc').value,
+        difficultyLevel: document.getElementById('course-difficulty').value,
+        category: document.getElementById('course-category').value,
+        estimatedDurationHours: parseFloat(document.getElementById('course-duration').value) || 0,
+        price: parseFloat(document.getElementById('course-price').value) || 0,
+        thumbnailUrl: document.getElementById('course-thumbnail').value,
+        isFeatured: document.getElementById('course-featured').checked,
+        isPublished: document.getElementById('course-published').checked,
+    };
+    try {
+        const method = id ? 'PUT' : 'POST';
+        const url = id ? `${API}/admin/courses/${id}` : `${API}/admin/courses`;
+        const res = await fetch(url, { method, headers: authH(), body: JSON.stringify(body) });
+        if (!res.ok) throw new Error((await res.json()).message);
+        showToast(id ? 'Course updated!' : 'Course created!');
+        closeCourseModal(); loadCourses();
+    } catch (err) { showToast(err.message, true); }
+}
+
+async function deleteCourse(id) {
+    if (!confirm('Delete this course? This cannot be undone.')) return;
+    try {
+        await fetch(`${API}/admin/courses/${id}`, { method: 'DELETE', headers: authH() });
+        showToast('Course deleted'); loadCourses();
+    } catch { showToast('Failed to delete', true); }
+}
+
+// ─── Products ─────────────────────────────────────────────────────────────────
+async function loadProducts(page = 1) {
+    currentPages.products = page;
+    try {
+        const res = await fetch(`${API}/admin/products?page=${page}&limit=15`, { headers: authH() });
+        const d = await res.json();
+        const tbody = document.getElementById('products-body');
+        tbody.innerHTML = (d.products || []).map(p => `
+            <tr>
+                <td><div style="font-weight:600;">${p.name}</div><div style="color:var(--text-dim);font-size:0.75rem;">${p.slug}</div></td>
+                <td style="color:var(--green);font-family:monospace;">$${parseFloat(p.price).toFixed(2)}</td>
+                <td style="color:var(--text-dim);">${p.category || '—'}</td>
+                <td style="color:${p.inventory_count < 5 ? 'var(--warning)' : 'var(--text)'};">${p.inventory_count}</td>
+                <td>${p.is_active ? '<span class="badge badge-green">Active</span>' : '<span class="badge badge-red">Inactive</span>'}</td>
+                <td>
+                    <button class="btn btn-outline btn-sm" onclick="editProduct(${JSON.stringify(p).replace(/"/g, '&quot;')})">EDIT</button>
+                    <button class="btn btn-danger btn-sm" onclick="deactivateProduct('${p.id}')">DEL</button>
+                </td>
+            </tr>`).join('') || '<tr><td colspan="6" style="text-align:center;color:var(--text-dim);">No products found</td></tr>';
+        renderPagination('products-pagination', page, Math.ceil((d.totalCount || 0) / 15), loadProducts);
+    } catch { showToast('Failed to load products', true); }
+}
+
+function openProductModal() { document.getElementById('product-id').value = ''; document.getElementById('product-modal').classList.add('open'); }
+function editProduct(p) {
+    document.getElementById('product-id').value = p.id;
+    document.getElementById('product-name').value = p.name;
+    document.getElementById('product-slug').value = p.slug;
+    document.getElementById('product-short-desc').value = p.short_description || '';
+    document.getElementById('product-desc').value = p.description || '';
+    document.getElementById('product-price').value = p.price;
+    document.getElementById('product-compare-price').value = p.compare_price || '';
+    document.getElementById('product-category').value = p.category || '';
+    document.getElementById('product-stock').value = p.inventory_count || 0;
+    document.getElementById('product-featured').checked = p.is_featured;
+    document.getElementById('product-active').checked = p.is_active;
+    document.getElementById('product-modal').classList.add('open');
+}
+function closeProductModal() { document.getElementById('product-modal').classList.remove('open'); }
+
+async function saveProduct() {
+    const id = document.getElementById('product-id').value;
+    const body = {
+        name: document.getElementById('product-name').value,
+        slug: document.getElementById('product-slug').value,
+        shortDescription: document.getElementById('product-short-desc').value,
+        description: document.getElementById('product-desc').value,
+        price: parseFloat(document.getElementById('product-price').value),
+        comparePrice: parseFloat(document.getElementById('product-compare-price').value) || null,
+        category: document.getElementById('product-category').value,
+        inventoryCount: parseInt(document.getElementById('product-stock').value) || 0,
+        isFeatured: document.getElementById('product-featured').checked,
+        isActive: document.getElementById('product-active').checked,
+    };
+    try {
+        const method = id ? 'PUT' : 'POST';
+        const url = id ? `${API}/admin/products/${id}` : `${API}/admin/products`;
+        const res = await fetch(url, { method, headers: authH(), body: JSON.stringify(body) });
+        if (!res.ok) throw new Error((await res.json()).message);
+        showToast(id ? 'Product updated!' : 'Product created!');
+        closeProductModal(); loadProducts();
+    } catch (err) { showToast(err.message, true); }
+}
+
+async function deactivateProduct(id) {
+    if (!confirm('Deactivate this product?')) return;
+    try {
+        await fetch(`${API}/admin/products/${id}`, { method: 'DELETE', headers: authH() });
+        showToast('Product deactivated'); loadProducts();
+    } catch { showToast('Failed', true); }
+}
+
+// ─── Orders ───────────────────────────────────────────────────────────────────
+async function loadOrders(page = 1) {
+    currentPages.orders = page;
+    const status = document.getElementById('order-status-filter')?.value || '';
+    try {
+        const res = await fetch(`${API}/admin/orders?page=${page}&limit=15&status=${status}`, { headers: authH() });
+        const d = await res.json();
+        const tbody = document.getElementById('orders-body');
+        tbody.innerHTML = (d.orders || []).map(o => `
+            <tr>
+                <td style="font-family:monospace;">#${o.id.slice(0,8).toUpperCase()}</td>
+                <td>${o.username || o.email}</td>
+                <td style="color:var(--green);font-family:monospace;">$${parseFloat(o.total).toFixed(2)}</td>
+                <td>${statusBadge(o.payment_status || 'pending')}</td>
+                <td>${statusBadge(o.status)}</td>
+                <td style="color:var(--text-dim);">${new Date(o.created_at).toLocaleDateString()}</td>
+                <td><button class="btn btn-outline btn-sm" onclick="openOrderModal('${o.id}','${o.status}','${o.tracking_number||''}')">UPDATE</button></td>
+            </tr>`).join('') || '<tr><td colspan="7" style="text-align:center;color:var(--text-dim);">No orders</td></tr>';
+        renderPagination('orders-pagination', page, Math.ceil((d.totalCount || 0) / 15), loadOrders);
+    } catch { showToast('Failed to load orders', true); }
+}
+
+function openOrderModal(id, status, tracking) {
+    document.getElementById('edit-order-id').value = id;
+    document.getElementById('order-status-edit').value = status;
+    document.getElementById('order-tracking').value = tracking;
+    document.getElementById('order-modal').classList.add('open');
+}
+function closeOrderModal() { document.getElementById('order-modal').classList.remove('open'); }
+
+async function saveOrder() {
+    const id = document.getElementById('edit-order-id').value;
+    try {
+        const res = await fetch(`${API}/admin/orders/${id}`, {
+            method: 'PATCH', headers: authH(),
+            body: JSON.stringify({ status: document.getElementById('order-status-edit').value, trackingNumber: document.getElementById('order-tracking').value }),
+        });
+        if (!res.ok) throw new Error((await res.json()).message);
+        showToast('Order updated!'); closeOrderModal(); loadOrders();
+    } catch (err) { showToast(err.message, true); }
+}
+
+// ─── Users ────────────────────────────────────────────────────────────────────
+async function loadUsers(page = 1) {
+    currentPages.users = page;
+    const search = document.getElementById('user-search')?.value || '';
+    try {
+        const res = await fetch(`${API}/admin/users?page=${page}&limit=15&search=${encodeURIComponent(search)}`, { headers: authH() });
+        const d = await res.json();
+        const tbody = document.getElementById('users-body');
+        tbody.innerHTML = (d.users || []).map(u => `
+            <tr>
+                <td style="font-weight:600;">@${u.username}</td>
+                <td style="color:var(--text-dim);">${u.email}</td>
+                <td>${statusBadge(u.role)}</td>
+                <td>${u.is_active ? '<span class="badge badge-green">Active</span>' : '<span class="badge badge-red">Disabled</span>'}</td>
+                <td style="color:var(--text-dim);">${new Date(u.created_at).toLocaleDateString()}</td>
+                <td>
+                    <button class="btn btn-outline btn-sm" onclick="toggleUser('${u.id}', ${!u.is_active})">${u.is_active ? 'DISABLE' : 'ENABLE'}</button>
+                    ${u.role !== 'admin' ? `<button class="btn btn-outline btn-sm" onclick="makeAdmin('${u.id}')">ADMIN</button>` : ''}
+                </td>
+            </tr>`).join('') || '<tr><td colspan="6" style="text-align:center;color:var(--text-dim);">No users found</td></tr>';
+        renderPagination('users-pagination', page, Math.ceil((d.totalCount || 0) / 15), loadUsers);
+    } catch { showToast('Failed to load users', true); }
+}
+
+async function toggleUser(id, isActive) {
+    try {
+        await fetch(`${API}/admin/users/${id}`, { method: 'PATCH', headers: authH(), body: JSON.stringify({ isActive }) });
+        showToast(`User ${isActive ? 'enabled' : 'disabled'}`); loadUsers();
+    } catch { showToast('Failed', true); }
+}
+
+async function makeAdmin(id) {
+    if (!confirm('Grant admin role to this user?')) return;
+    try {
+        await fetch(`${API}/admin/users/${id}`, { method: 'PATCH', headers: authH(), body: JSON.stringify({ role: 'admin' }) });
+        showToast('User is now admin'); loadUsers();
+    } catch { showToast('Failed', true); }
+}
+
+// ─── Pagination ───────────────────────────────────────────────────────────────
+function renderPagination(containerId, current, total, loadFn) {
+    const c = document.getElementById(containerId);
+    if (total <= 1) { c.innerHTML = ''; return; }
+    c.innerHTML = Array.from({ length: Math.min(total, 10) }, (_, i) => i + 1).map(p =>
+        `<button class="page-btn ${p === current ? 'active' : ''}" onclick="${loadFn.name}(${p})">${p}</button>`
+    ).join('');
+}
+
+// ─── Init ─────────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', async () => {
+    if (!getToken()) { window.location.href = '/academy/login.html'; return; }
+
+    // Check admin
+    try {
+        const res = await fetch(`${API}/auth/me`, { headers: authH() });
+        const user = await res.json();
+        if (user.role !== 'admin') { alert('Admin access required.'); window.location.href = '/'; return; }
+        document.getElementById('admin-name').textContent = user.username;
+    } catch { window.location.href = '/academy/login.html'; return; }
+
+    loadDashboard();
+});
+</script>
+</body>
+</html>

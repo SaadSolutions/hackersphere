@@ -1,0 +1,203 @@
+/* ==========================================================================
+   HACKERSPHERE - GLOBAL MOBILE RESPONSIVE STYLES
+   ========================================================================== */
+
+/* ─── Navigation ──────────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .nav-header .nav-container,
+  .academy-header .academy-nav,
+  .shop-header .shop-nav {
+    padding: 0 16px;
+    height: 56px;
+  }
+
+  .nav-links,
+  .academy-nav-links {
+    display: none !important;
+  }
+
+  .hamburger-btn,
+  .academy-hamburger {
+    display: flex !important;
+  }
+
+  /* Hero sections */
+  .hero-title, .hero h1 {
+    font-size: clamp(1.6rem, 5vw, 2.4rem) !important;
+  }
+
+  .hero-subtitle, .hero p {
+    font-size: 0.95rem !important;
+  }
+
+  .hero-cta {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .hero-cta .btn, .hero-cta a {
+    width: 100%;
+    text-align: center;
+  }
+
+  /* Grids collapse to single column */
+  .products-grid,
+  .courses-grid,
+  .features-grid,
+  .categories-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .products-grid {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)) !important;
+  }
+
+  /* Cards */
+  .product-card,
+  .course-card {
+    width: 100%;
+  }
+
+  /* Checkout and profile two-column layouts */
+  .checkout-grid,
+  .profile-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .form-row,
+  .modal-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Order summary stacks below forms */
+  .order-summary {
+    order: -1; /* Show summary above on mobile */
+    position: static !important;
+  }
+
+  /* Tables become scrollable */
+  .data-table-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .data-table {
+    min-width: 500px;
+  }
+
+  /* Modals full screen on mobile */
+  .modal-box,
+  .form-modal .modal-box {
+    width: 95vw !important;
+    max-width: 100% !important;
+    padding: 20px !important;
+    margin: 10px !important;
+    max-height: 95vh;
+  }
+
+  /* Filter/tab bars scroll horizontally */
+  .tab-nav,
+  .filter-tabs {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    flex-wrap: nowrap !important;
+    scrollbar-width: none;
+  }
+  .tab-nav::-webkit-scrollbar,
+  .filter-tabs::-webkit-scrollbar { display: none; }
+
+  /* Cart sidebar */
+  .cart-sidebar {
+    width: 100% !important;
+    right: -100% !important;
+  }
+  .cart-sidebar.open {
+    right: 0 !important;
+  }
+}
+
+/* ─── Small phones ────────────────────────────────────────────────────────── */
+@media (max-width: 480px) {
+  .content,
+  .page-content,
+  .checkout-page,
+  .orders-page,
+  .profile-page,
+  .search-page {
+    padding: 0 12px !important;
+    margin-top: 70px !important;
+  }
+
+  .stats-grid {
+    grid-template-columns: 1fr 1fr !important;
+  }
+
+  .step-indicator {
+    font-size: 0.65rem !important;
+  }
+
+  .product-grid {
+    grid-template-columns: 1fr !important;
+    gap: 20px !important;
+  }
+
+  .tracking-steps {
+    gap: 4px !important;
+  }
+
+  .step-label {
+    font-size: 0.6rem !important;
+  }
+
+  /* Auth cards */
+  .auth-card {
+    padding: 20px !important;
+    margin: 0 8px !important;
+  }
+
+  /* Admin sidebar hidden, show toggle */
+  .layout {
+    grid-template-columns: 1fr !important;
+  }
+
+  .sidebar {
+    display: none !important;
+  }
+}
+
+/* ─── Touch-friendly interactive elements ─────────────────────────────────── */
+@media (hover: none) and (pointer: coarse) {
+  .btn, button, a.btn,
+  .nav-item, .nav-link,
+  .tab-btn, .filter-tab,
+  .qty-btn, .page-btn {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  .product-card:hover,
+  .course-card:hover,
+  .result-card:hover {
+    transform: none !important; /* Disable hover transforms on touch */
+  }
+}
+
+/* ─── Print styles ────────────────────────────────────────────────────────── */
+@media print {
+  .sidebar, .nav-header, .academy-header,
+  .topbar, .search-bar, .btn, button,
+  .cart-sidebar, .toast-container {
+    display: none !important;
+  }
+
+  body { background: white; color: black; }
+  .order-card, .checkout-section { border: 1px solid #ccc !important; }
+}
+
+/* ─── Accessibility: reduced motion ──────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

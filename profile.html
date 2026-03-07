@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile - HackerSphere</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="academy/styles.css">
+    <style>
+        .profile-page { max-width: 960px; margin: 90px auto 60px; padding: 0 20px; }
+        .profile-grid { display: grid; grid-template-columns: 280px 1fr; gap: 28px; align-items: start; }
+        .profile-sidebar { background: var(--hacker-grey,#111); border: 1px solid rgba(0,255,0,0.15); border-radius: 12px; padding: 28px; text-align: center; position: sticky; top: 90px; }
+        .avatar-wrapper { position: relative; display: inline-block; margin-bottom: 16px; }
+        .avatar-img { width: 100px; height: 100px; border-radius: 50%; border: 3px solid var(--matrix-green, #00ff00); object-fit: cover; }
+        .avatar-edit { position: absolute; bottom: 0; right: 0; width: 28px; height: 28px; background: var(--matrix-green, #00ff00); border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 0.8rem; }
+        .profile-name { color: #fff; font-size: 1.2rem; font-weight: 700; margin-bottom: 4px; }
+        .profile-username { color: rgba(0,255,0,0.7); font-family: 'Courier New', monospace; font-size: 0.85rem; margin-bottom: 12px; }
+        .profile-role { display: inline-block; padding: 3px 12px; border-radius: 20px; border: 1px solid rgba(0,255,0,0.3); color: var(--matrix-green, #00ff00); font-size: 0.75rem; font-family: monospace; text-transform: uppercase; margin-bottom: 16px; }
+        .profile-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 20px; }
+        .stat-box { background: rgba(0,255,0,0.05); border: 1px solid rgba(0,255,0,0.1); border-radius: 8px; padding: 12px 8px; text-align: center; }
+        .stat-value { color: var(--matrix-green, #00ff00); font-family: monospace; font-size: 1.3rem; font-weight: 700; }
+        .stat-label { color: #888; font-size: 0.75rem; margin-top: 2px; }
+        .sidebar-nav { margin-top: 20px; border-top: 1px solid rgba(0,255,0,0.1); padding-top: 16px; }
+        .sidebar-nav a { display: block; padding: 9px 12px; color: #ccc; text-decoration: none; border-radius: 6px; font-size: 0.9rem; transition: all 0.2s; text-align: left; }
+        .sidebar-nav a:hover, .sidebar-nav a.active { background: rgba(0,255,0,0.08); color: var(--matrix-green, #00ff00); }
+        .profile-main { display: flex; flex-direction: column; gap: 20px; }
+        .profile-card { background: var(--hacker-grey, #111); border: 1px solid rgba(0,255,0,0.15); border-radius: 12px; padding: 24px; }
+        .card-title { color: var(--matrix-green, #00ff00); font-family: 'Courier New', monospace; font-size: 1rem; letter-spacing: 1px; margin-bottom: 20px; text-transform: uppercase; border-bottom: 1px solid rgba(0,255,0,0.1); padding-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .form-group { margin-bottom: 0; }
+        .form-group label { display: block; color: #aaa; font-size: 0.85rem; font-family: monospace; margin-bottom: 6px; }
+        .form-group input, .form-group textarea { width: 100%; background: rgba(0,0,0,0.4); border: 1px solid rgba(0,255,0,0.15); color: #fff; padding: 10px 12px; border-radius: 6px; font-family: monospace; font-size: 0.9rem; box-sizing: border-box; transition: border-color 0.2s; }
+        .form-group input:focus, .form-group textarea:focus { outline: none; border-color: var(--matrix-green, #00ff00); }
+        .form-group textarea { resize: vertical; min-height: 80px; }
+        .form-full { grid-column: 1/-1; }
+        .btn-save { background: var(--matrix-green, #00ff00); color: #000; border: none; padding: 10px 24px; border-radius: 6px; font-family: monospace; font-weight: 700; cursor: pointer; transition: all 0.2s; font-size: 0.9rem; }
+        .btn-save:hover { background: #00dd00; }
+        .btn-save:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn-danger { background: transparent; color: #ff4444; border: 1px solid #ff4444; padding: 10px 24px; border-radius: 6px; font-family: monospace; font-weight: 700; cursor: pointer; transition: all 0.2s; font-size: 0.9rem; }
+        .btn-danger:hover { background: rgba(255,68,68,0.1); }
+        .alert { padding: 12px 16px; border-radius: 6px; font-family: monospace; font-size: 0.9rem; margin-bottom: 16px; display: none; }
+        .alert.success { background: rgba(0,255,0,0.1); border: 1px solid var(--matrix-green, #00ff00); color: var(--matrix-green, #00ff00); }
+        .alert.error { background: rgba(255,68,68,0.1); border: 1px solid #ff4444; color: #ff4444; }
+        .course-progress-item { display: flex; gap: 12px; align-items: center; padding: 12px 0; border-bottom: 1px solid rgba(0,255,0,0.08); }
+        .course-thumb { width: 56px; height: 56px; border-radius: 8px; object-fit: cover; flex-shrink: 0; }
+        .course-progress-info { flex: 1; }
+        .course-progress-title { color: #fff; font-weight: 600; font-size: 0.9rem; margin-bottom: 4px; }
+        .progress-bar { height: 4px; background: rgba(0,255,0,0.1); border-radius: 2px; overflow: hidden; }
+        .progress-fill { height: 100%; background: var(--matrix-green, #00ff00); border-radius: 2px; transition: width 0.3s; }
+        .progress-pct { color: var(--matrix-green, #00ff00); font-family: monospace; font-size: 0.8rem; margin-top: 3px; }
+        @media (max-width: 768px) {
+            .profile-grid { grid-template-columns: 1fr; }
+            .profile-sidebar { position: static; }
+            .form-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <header class="academy-header">
+        <nav class="academy-nav academy-container">
+            <a href="/" class="academy-title">HACKERSPHERE</a>
+            <div class="academy-nav-links">
+                <a href="/academy/catalog.html" class="academy-nav-link">Academy</a>
+                <a href="/shop" class="academy-nav-link">Shop</a>
+                <a href="/shop/orders.html" class="academy-nav-link">Orders</a>
+                <button onclick="logout()" class="academy-nav-link" style="background:none;border:none;cursor:pointer;color:inherit;font:inherit;">Logout</button>
+            </div>
+        </nav>
+    </header>
+
+    <main class="profile-page">
+        <div class="profile-grid">
+            <!-- Sidebar -->
+            <div class="profile-sidebar">
+                <div class="avatar-wrapper">
+                    <img class="avatar-img" id="avatar-img" src="https://ui-avatars.com/api/?name=User&background=001100&color=00ff41&size=100" alt="Avatar">
+                    <div class="avatar-edit" onclick="document.getElementById('avatar-upload').click()">✎</div>
+                    <input type="file" id="avatar-upload" accept="image/*" style="display:none;" onchange="uploadAvatar(this)">
+                </div>
+                <div class="profile-name" id="display-name">Loading...</div>
+                <div class="profile-username" id="display-username">@...</div>
+                <div class="profile-role" id="display-role">user</div>
+                <div class="profile-stats">
+                    <div class="stat-box">
+                        <div class="stat-value" id="stat-courses">0</div>
+                        <div class="stat-label">Courses</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value" id="stat-orders">0</div>
+                        <div class="stat-label">Orders</div>
+                    </div>
+                </div>
+                <div class="sidebar-nav">
+                    <a href="#profile-info" class="active">Profile Info</a>
+                    <a href="#security">Security</a>
+                    <a href="#courses">My Courses</a>
+                    <a href="/shop/orders.html">Order History</a>
+                    <a href="/academy/dashboard.html">Academy Dashboard</a>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="profile-main">
+                <!-- Profile Info -->
+                <div class="profile-card" id="profile-info">
+                    <div class="card-title">
+                        Profile Information
+                        <button class="btn-save" id="save-profile-btn" onclick="saveProfile()">SAVE</button>
+                    </div>
+                    <div id="profile-alert" class="alert"></div>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>First Name</label>
+                            <input type="text" id="first-name" placeholder="John">
+                        </div>
+                        <div class="form-group">
+                            <label>Last Name</label>
+                            <input type="text" id="last-name" placeholder="Doe">
+                        </div>
+                        <div class="form-group">
+                            <label>Username</label>
+                            <input type="text" id="username" placeholder="your_handle">
+                        </div>
+                        <div class="form-group">
+                            <label>Email (read-only)</label>
+                            <input type="email" id="email" readonly style="opacity:0.6;">
+                        </div>
+                        <div class="form-group form-full">
+                            <label>Bio</label>
+                            <textarea id="bio" placeholder="Tell the community about yourself..."></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Security -->
+                <div class="profile-card" id="security">
+                    <div class="card-title">Security</div>
+                    <div id="security-alert" class="alert"></div>
+                    <div class="form-grid">
+                        <div class="form-group form-full">
+                            <label>Current Password</label>
+                            <input type="password" id="current-password" placeholder="••••••••">
+                        </div>
+                        <div class="form-group">
+                            <label>New Password</label>
+                            <input type="password" id="new-password" placeholder="Min 8 chars, upper, lower, number">
+                        </div>
+                        <div class="form-group">
+                            <label>Confirm New Password</label>
+                            <input type="password" id="confirm-password" placeholder="••••••••">
+                        </div>
+                    </div>
+                    <div style="margin-top:16px; display:flex; gap:10px;">
+                        <button class="btn-save" onclick="changePassword()">CHANGE PASSWORD</button>
+                    </div>
+                </div>
+
+                <!-- Enrolled Courses -->
+                <div class="profile-card" id="courses">
+                    <div class="card-title">My Courses</div>
+                    <div id="courses-list">
+                        <div style="color:#888;font-size:0.9rem;">Loading courses...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const API = 'http://localhost:5000/api';
+
+        function getToken() {
+            return localStorage.getItem('academy_token') || localStorage.getItem('shop_token') || '';
+        }
+
+        function authHeaders() {
+            const t = getToken();
+            return t ? { 'Content-Type': 'application/json', 'Authorization': `Bearer ${t}` }
+                     : { 'Content-Type': 'application/json' };
+        }
+
+        function logout() {
+            localStorage.removeItem('academy_token');
+            localStorage.removeItem('shop_token');
+            window.location.href = '/academy/login.html';
+        }
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            if (!getToken()) {
+                localStorage.setItem('post_login_redirect', '/profile.html');
+                window.location.href = '/academy/login.html';
+                return;
+            }
+            await Promise.all([loadProfile(), loadCourses(), loadStats()]);
+        });
+
+        async function loadProfile() {
+            const res = await fetch(`${API}/auth/me`, { headers: authHeaders() });
+            if (!res.ok) { logout(); return; }
+            const user = await res.json();
+
+            document.getElementById('display-name').textContent = `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.username;
+            document.getElementById('display-username').textContent = `@${user.username}`;
+            document.getElementById('display-role').textContent = user.role;
+            document.getElementById('first-name').value = user.firstName || '';
+            document.getElementById('last-name').value = user.lastName || '';
+            document.getElementById('username').value = user.username || '';
+            document.getElementById('email').value = user.email || '';
+            document.getElementById('bio').value = user.bio || '';
+
+            if (user.avatarUrl) {
+                document.getElementById('avatar-img').src = user.avatarUrl;
+            } else {
+                document.getElementById('avatar-img').src = `https://ui-avatars.com/api/?name=${encodeURIComponent(user.username)}&background=001100&color=00ff41&size=100`;
+            }
+        }
+
+        async function loadStats() {
+            try {
+                const [coursesRes, ordersRes] = await Promise.all([
+                    fetch(`${API}/academy/progress/courses`, { headers: authHeaders() }),
+                    fetch(`${API}/shop/orders/history?limit=1`, { headers: authHeaders() }),
+                ]);
+                if (coursesRes.ok) {
+                    const d = await coursesRes.json();
+                    document.getElementById('stat-courses').textContent = (d.courses || []).length;
+                }
+                if (ordersRes.ok) {
+                    const d = await ordersRes.json();
+                    document.getElementById('stat-orders').textContent = d.totalCount || 0;
+                }
+            } catch (_) {}
+        }
+
+        async function loadCourses() {
+            try {
+                const res = await fetch(`${API}/academy/progress/courses`, { headers: authHeaders() });
+                const data = await res.json();
+                const courses = data.courses || [];
+                const container = document.getElementById('courses-list');
+
+                if (!courses.length) {
+                    container.innerHTML = `<p style="color:#888;font-size:0.9rem;">No courses enrolled. <a href="/academy/catalog.html" style="color:var(--matrix-green,#00ff00);">Browse Academy</a></p>`;
+                    return;
+                }
+
+                container.innerHTML = courses.map(c => `
+                    <div class="course-progress-item">
+                        <img class="course-thumb" src="${c.thumbnail_url || `https://placehold.co/56x56/0a0a0a/00ff41?text=C`}" alt="${c.title}">
+                        <div class="course-progress-info">
+                            <div class="course-progress-title">${c.title}</div>
+                            <div class="progress-bar"><div class="progress-fill" style="width:${c.progressPercent || 0}%"></div></div>
+                            <div class="progress-pct">${c.progressPercent || 0}% complete</div>
+                        </div>
+                        <a href="/academy/course.html?slug=${c.slug}" style="color:var(--matrix-green,#00ff00);font-family:monospace;font-size:0.8rem;text-decoration:none;white-space:nowrap;">Continue →</a>
+                    </div>`).join('');
+            } catch (_) {}
+        }
+
+        async function saveProfile() {
+            const btn = document.getElementById('save-profile-btn');
+            const alert = document.getElementById('profile-alert');
+            btn.disabled = true;
+            btn.textContent = 'SAVING...';
+
+            try {
+                const res = await fetch(`${API}/auth/me`, {
+                    method: 'PUT',
+                    headers: authHeaders(),
+                    body: JSON.stringify({
+                        firstName: document.getElementById('first-name').value.trim(),
+                        lastName: document.getElementById('last-name').value.trim(),
+                        username: document.getElementById('username').value.trim(),
+                        bio: document.getElementById('bio').value.trim(),
+                    }),
+                });
+                const data = await res.json();
+
+                if (!res.ok) throw new Error(data.message);
+
+                showAlert('profile-alert', 'Profile updated successfully!', 'success');
+                document.getElementById('display-name').textContent = `${data.firstName || ''} ${data.lastName || ''}`.trim() || data.username;
+                document.getElementById('display-username').textContent = `@${data.username}`;
+            } catch (err) {
+                showAlert('profile-alert', err.message || 'Failed to update profile', 'error');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'SAVE';
+            }
+        }
+
+        async function changePassword() {
+            const current = document.getElementById('current-password').value;
+            const newPwd = document.getElementById('new-password').value;
+            const confirm = document.getElementById('confirm-password').value;
+
+            if (!current || !newPwd || !confirm) {
+                showAlert('security-alert', 'All password fields are required', 'error'); return;
+            }
+            if (newPwd !== confirm) {
+                showAlert('security-alert', 'New passwords do not match', 'error'); return;
+            }
+
+            try {
+                const res = await fetch(`${API}/auth/password`, {
+                    method: 'PUT',
+                    headers: authHeaders(),
+                    body: JSON.stringify({ currentPassword: current, newPassword: newPwd }),
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.message);
+
+                showAlert('security-alert', 'Password changed successfully!', 'success');
+                document.getElementById('current-password').value = '';
+                document.getElementById('new-password').value = '';
+                document.getElementById('confirm-password').value = '';
+            } catch (err) {
+                showAlert('security-alert', err.message || 'Failed to change password', 'error');
+            }
+        }
+
+        function uploadAvatar(input) {
+            const file = input.files[0];
+            if (!file) return;
+            // In production: upload to S3/Cloudinary and update avatar_url
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                document.getElementById('avatar-img').src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function showAlert(id, msg, type) {
+            const el = document.getElementById(id);
+            el.textContent = msg;
+            el.className = `alert ${type}`;
+            el.style.display = 'block';
+            setTimeout(() => { el.style.display = 'none'; }, 5000);
+        }
+    </script>
+</body>
+</html>
