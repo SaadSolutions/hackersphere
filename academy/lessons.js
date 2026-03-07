@@ -348,6 +348,23 @@ class LessonViewer {
 
         if (!block || !block.questions) return;
 
+        // Check for unanswered questions
+        const unansweredQuestions = [];
+        block.questions.forEach((question, qIndex) => {
+            const quizKey = `${blockIndex}-${qIndex}`;
+            if (!this.quizAnswers.has(quizKey)) {
+                unansweredQuestions.push(qIndex + 1);
+            }
+        });
+
+        if (unansweredQuestions.length > 0) {
+            Utils.showToast(
+                `Please answer all questions before submitting. Unanswered: ${unansweredQuestions.join(', ')}`,
+                'error'
+            );
+            return;
+        }
+
         let correctCount = 0;
         const results = [];
 

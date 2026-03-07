@@ -316,8 +316,8 @@ class CourseDetail {
 
             // Load full course content for enrolled users
             const isAuthenticated = window.AcademyAPI.isAuthenticated();
-            if (isAuthenticated && await this.checkEnrollmentStatus(course.id)) {
-                await this.loadCourseContent(course.id);
+            if (isAuthenticated && await this.checkEnrollmentStatus(this.currentCourse.id)) {
+                await this.loadCourseContent(this.currentCourse.id);
             }
 
         } catch (error) {

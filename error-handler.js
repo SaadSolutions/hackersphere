@@ -258,4 +258,244 @@ class ErrorHandler {
             normalized.message = error;
             normalized.code = null;
         } else if (error instanceof Error) {
-            normalized.type = this }
+            normalized.type = this.classifyError(error);
+            normalized.message = error.message;
+            normalized.code = error.code || null;
+            normalized.stack = error.stack;
+        } else if (typeof error === 'object') {
+            normalized.type = error.type || this.classifyError(error);
+            normalized.message = error.message || 'An unknown error occurred';
+            normalized.code = error.status || error.code || null;
+        } else {
+            normalized.type = 'unknown';
+            normalized.message = String(error);
+            normalized.code = null;
+        }
+
+        return normalized;
+    }
+
+    /**
+     * Classify error type based on error properties
+     * @param {Error|Object} error - Error to classify
+     * @returns {string} Error type
+     */
+    classifyError(error) {
+        const message = (error.message || '').toLowerCase();
+        const status = error.status || error.code;
+
+        if (status === 401 || status === 403 || message.includes('unauthorized') || message.includes('forbidden')) {
+            return 'auth';
+        }
+        if (status >= 500 || message.includes('server error') || message.includes('internal server')) {
+            return 'server';
+        }
+        if (message.includes('network') || message.includes('failed to fetch') || message.includes('timeout')) {
+            return 'network';
+        }
+        if (status === 400 || status === 422 || message.includes('validation') || message.includes('invalid')) {
+            return 'validation';
+        }
+        if (message.includes('permission') || message.includes('access denied')) {
+            return 'permission';
+        }
+        return 'unknown';
+    }
+
+    // ============================================================================
+    // ERROR STRATEGY & RECOVERY
+    // ============================================================================
+
+    /**
+     * Get error handling strategy based on error type
+     * @param {Object} normalizedError - Normalized error object
+     * @returns {Object} Error handling strategy
+     */
+    getErrorStrategy(normalizedError) {
+        const handler = this.errorHandlers.get(normalizedError.type);
+
+        if (handler) {
+            return handler(normalizedError);
+        }
+
+        // Default strategy
+        return {
+            message: normalizedError.message || 'An unexpected error occurred.',
+            type: 'error',
+            showRetry: false
+        };
+    }
+
+    /**
+     * Determine if error should auto-recover
+     * @param {Object} normalizedError - Normalized error object
+     * @returns {boolean} Whether to attempt auto-recovery
+     */
+    shouldAutoRecover(normalizedError) {
+        // Auto-recover network errors and auth errors
+        return normalizedError.type === 'network' || normalizedError.type === 'auth';
+    }
+
+    /**
+     * Attempt error recovery
+     * @param {Object} strategy - Error handling strategy
+     * @param {Object} normalizedError - Normalized error object
+     */
+    async attemptRecovery(strategy, normalizedError) {
+        try {
+            if (strategy.retryDelay) {
+                await new Promise(resolve => setTimeout(resolve, strategy.retryDelay));
+            }
+            strategy.recoveryAction();
+        } catch (recoveryError) {
+            console.error('Recovery failed:', recoveryError);
+            this.showErrorNotification(strategy, normalizedError);
+        }
+    }
+
+    /**
+     * Register an error handler for a specific type
+     * @param {string} type - Error type
+     * @param {Function} handler - Handler function
+     */
+    registerHandler(type, handler) {
+        this.errorHandlers.set(type, handler);
+    }
+
+    // ============================================================================
+    // NOTIFICATIONS
+    // ============================================================================
+
+    /**
+     * Show error notification to user
+     * @param {Object} strategy - Error handling strategy
+     * @param {Object} normalizedError - Normalized error object
+     */
+    showErrorNotification(strategy, normalizedError) {
+        if (strategy.showRetry) {
+            this.showErrorModal(strategy.message, strategy.recoveryAction);
+        } else {
+            this.showToast(strategy.message, strategy.type || 'error');
+        }
+    }
+
+    /**
+     * Show toast notification
+     * @param {string} message - Toast message
+     * @param {string} type - Toast type (info, warning, error, success)
+     * @param {number} duration - Duration in ms
+     */
+    showToast(message, type = 'info', duration = 5000) {
+        if (!this.toastContainer) return;
+
+        const toast = document.createElement('div');
+        toast.className = `toast toast-${type}`;
+        toast.style.cssText = `
+            pointer-events: auto;
+            padding: 12px 20px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 0.9rem;
+            animation: slideIn 0.3s ease;
+            border-left: 4px solid;
+            background: rgba(26, 26, 26, 0.95);
+            color: #cccccc;
+        `;
+
+        const colors = {
+            info: '#00ff00',
+            success: '#00ff00',
+            warning: '#ffaa00',
+            error: '#ff4444'
+        };
+
+        toast.style.borderLeftColor = colors[type] || colors.info;
+        toast.textContent = message;
+
+        this.toastContainer.appendChild(toast);
+
+        setTimeout(() => {
+            toast.style.animation = 'slideOut 0.3s ease';
+            setTimeout(() => toast.remove(), 300);
+        }, duration);
+    }
+
+    /**
+     * Show error modal dialog
+     * @param {string} message - Error message
+     * @param {Function} retryAction - Retry action callback
+     */
+    showErrorModal(message, retryAction) {
+        if (!this.modalContainer) return;
+
+        const messageEl = this.modalContainer.querySelector('.error-message');
+        if (messageEl) {
+            messageEl.textContent = message;
+        }
+
+        this.currentRetryAction = retryAction;
+        this.modalContainer.style.display = 'flex';
+    }
+
+    /**
+     * Hide error modal
+     */
+    hideErrorModal() {
+        if (this.modalContainer) {
+            this.modalContainer.style.display = 'none';
+        }
+        this.currentRetryAction = null;
+    }
+
+    /**
+     * Handle retry button click
+     */
+    handleRetry() {
+        this.hideErrorModal();
+        if (this.currentRetryAction) {
+            this.currentRetryAction();
+        }
+    }
+
+    // ============================================================================
+    // ERROR HISTORY
+    // ============================================================================
+
+    /**
+     * Add error to history
+     * @param {Object} normalizedError - Normalized error object
+     */
+    addToHistory(normalizedError) {
+        this.errorHistory.push(normalizedError);
+        if (this.errorHistory.length > this.maxHistorySize) {
+            this.errorHistory.shift();
+        }
+    }
+
+    /**
+     * Get error history
+     * @returns {Array} Error history
+     */
+    getHistory() {
+        return [...this.errorHistory];
+    }
+
+    /**
+     * Clear error history
+     */
+    clearHistory() {
+        this.errorHistory = [];
+    }
+}
+
+// ============================================================================
+// AUTO-INITIALIZE
+// ============================================================================
+
+document.addEventListener('DOMContentLoaded', () => {
+    ErrorHandler.init();
+});
+
+// Make available globally
+window.ErrorHandler = ErrorHandler;

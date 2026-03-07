@@ -4,6 +4,20 @@
  */
 
 /**
+ * Escape HTML special characters to prevent XSS
+ * @param {string} str - String to escape
+ * @returns {string} Escaped string
+ */
+function escapeHtml(str) {
+    if (typeof DOMPurify !== 'undefined') {
+        return DOMPurify.sanitize(str, { ALLOWED_TAGS: [], ALLOWED_ATTR: [] });
+    }
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+}
+
+/**
  * Format currency value
  * @param {number} amount - Amount to format
  * @param {string} currency - Currency code (default: USD)
