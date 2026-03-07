@@ -8,23 +8,31 @@ const matrixArray = matrix.split('');
 let fontSize = 16;
 let columns = 0;
 let drops = [];
+let animationId = null;
+let lastTime = 0;
+const frameInterval = 50; // ms between frames (~20fps) — visually identical, less GPU load
 
 // Function to initialize the matrix rain
 function initializeMatrix() {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
-    columns = canvas.width / fontSize;
+    columns = Math.floor(canvas.width / fontSize);
     drops = [];
 
     for (let x = 0; x < columns; x++) {
-        drops[x] = Math.random() * canvas.height;
+        drops[x] = Math.random() * (canvas.height / fontSize);
     }
 
     ctx.font = fontSize + 'px "Courier New", monospace';
 }
 
 // Function to draw the matrix rain
-function drawMatrix() {
+function drawMatrix(timestamp) {
+    animationId = requestAnimationFrame(drawMatrix);
+
+    if (timestamp - lastTime < frameInterval) return;
+    lastTime = timestamp;
+
     ctx.fillStyle = 'rgba(0, 0, 0, 0.04)';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -48,11 +56,25 @@ function drawMatrix() {
 // Start the animation
 function startMatrixAnimation() {
     initializeMatrix();
-    setInterval(drawMatrix, 35); // Adjust speed as needed
+    if (animationId) cancelAnimationFrame(animationId);
+    animationId = requestAnimationFrame(drawMatrix);
 }
 
-// Handle window resize
-window.addEventListener('resize', initializeMatrix);
+// Debounce resize to avoid thrashing
+let resizeTimeout;
+window.addEventListener('resize', () => {
+    clearTimeout(resizeTimeout);
+    resizeTimeout = setTimeout(initializeMatrix, 150);
+});
+
+// Pause animation when tab is hidden to save resources
+document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+        if (animationId) cancelAnimationFrame(animationId);
+    } else {
+        animationId = requestAnimationFrame(drawMatrix);
+    }
+});
 
 // Start when DOM is loaded
 document.addEventListener('DOMContentLoaded', startMatrixAnimation);

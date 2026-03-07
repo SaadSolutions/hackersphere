@@ -170,6 +170,14 @@ body {
     transition: var(--transition);
 }
 
+.navbar .container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 15px;
+    padding-bottom: 15px;
+}
+
 .nav-brand {
     display: flex;
     align-items: center;
@@ -1242,9 +1250,65 @@ body {
    RESPONSIVE DESIGN
    ========================================================================== */
 
+/* ==========================================================================
+   MOBILE HAMBURGER MENU
+   ========================================================================== */
+
+.hamburger-btn {
+    display: none;
+    background: none;
+    border: 1px solid var(--glass-border);
+    color: var(--matrix-green);
+    padding: 8px 12px;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    font-size: 1.4rem;
+    line-height: 1;
+    transition: var(--transition);
+}
+
+.hamburger-btn:hover {
+    background: var(--glass-bg);
+    border-color: var(--matrix-green);
+}
+
+.hamburger-btn[aria-expanded="true"] .hamburger-icon::before { content: '✕'; }
+.hamburger-btn[aria-expanded="false"] .hamburger-icon::before { content: '☰'; }
+
+.mobile-nav {
+    display: none;
+    flex-direction: column;
+    gap: 0;
+    background: rgba(0, 0, 0, 0.98);
+    border-top: 1px solid var(--glass-border);
+    padding: 10px 0;
+}
+
+.mobile-nav.open {
+    display: flex;
+}
+
+.mobile-nav .nav-link {
+    padding: 14px 24px;
+    border-radius: 0;
+    border-bottom: 1px solid var(--glass-border);
+}
+
+.mobile-nav .cart-container {
+    padding: 10px 24px;
+}
+
 @media (max-width: 768px) {
     .navbar .nav-links {
-        display: none; /* Could implement mobile menu later */
+        display: none;
+    }
+
+    .hamburger-btn {
+        display: block;
+    }
+
+    .navbar .container {
+        flex-wrap: wrap;
     }
 
     .nav-brand {
