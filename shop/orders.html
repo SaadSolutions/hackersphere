@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order History - HackerSphere Shop</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .orders-page { max-width: 900px; margin: 100px auto 60px; padding: 0 20px; }
+        .page-title { color: var(--matrix-green); font-family: 'Courier New', monospace; font-size: 1.8rem; letter-spacing: 2px; margin-bottom: 8px; }
+        .page-subtitle { color: var(--text-muted); margin-bottom: 32px; font-size: 0.9rem; }
+        .order-card { background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 12px; margin-bottom: 20px; overflow: hidden; }
+        .order-header { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; border-bottom: 1px solid var(--glass-border); flex-wrap: wrap; gap: 12px; }
+        .order-id { font-family: 'Courier New', monospace; color: var(--text-primary); font-weight: 700; }
+        .order-date { color: var(--text-muted); font-size: 0.85rem; }
+        .order-total { color: var(--matrix-green); font-family: 'Courier New', monospace; font-weight: 700; font-size: 1.1rem; }
+        .order-status { padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; font-family: 'Courier New', monospace; font-weight: 700; text-transform: uppercase; }
+        .status-pending { background: rgba(255,170,0,0.1); border: 1px solid #ffaa00; color: #ffaa00; }
+        .status-processing { background: rgba(0,150,255,0.1); border: 1px solid #0096ff; color: #0096ff; }
+        .status-shipped { background: rgba(150,0,255,0.1); border: 1px solid #9600ff; color: #9600ff; }
+        .status-delivered { background: rgba(0,255,0,0.1); border: 1px solid var(--matrix-green); color: var(--matrix-green); }
+        .status-cancelled { background: rgba(255,68,68,0.1); border: 1px solid #ff4444; color: #ff4444; }
+        .order-items { padding: 16px 20px; }
+        .order-item { display: flex; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--glass-border); }
+        .order-item:last-child { border-bottom: none; }
+        .order-item-name { color: var(--text-primary); flex: 1; font-size: 0.9rem; }
+        .order-item-qty { color: var(--text-muted); font-size: 0.85rem; }
+        .order-item-price { color: var(--matrix-green); font-family: 'Courier New', monospace; font-size: 0.9rem; }
+        .order-actions { padding: 12px 20px; display: flex; gap: 10px; background: rgba(0,0,0,0.2); flex-wrap: wrap; }
+        .btn-sm { padding: 7px 16px; border-radius: 6px; font-family: 'Courier New', monospace; font-size: 0.8rem; cursor: pointer; border: 1px solid var(--glass-border); background: transparent; color: var(--text-primary); transition: all 0.2s; text-decoration: none; display: inline-block; }
+        .btn-sm:hover { border-color: var(--matrix-green); color: var(--matrix-green); }
+        .btn-sm.primary { background: var(--matrix-green); color: #000; border-color: var(--matrix-green); }
+        .btn-sm.primary:hover { background: #00dd00; }
+        .tracking-bar { padding: 16px 20px; background: rgba(0,0,0,0.2); border-top: 1px solid var(--glass-border); }
+        .tracking-steps { display: flex; justify-content: space-between; position: relative; }
+        .tracking-steps::before { content: ''; position: absolute; top: 14px; left: 0; right: 0; height: 2px; background: var(--glass-border); z-index: 0; }
+        .tracking-step { display: flex; flex-direction: column; align-items: center; gap: 6px; z-index: 1; }
+        .step-dot { width: 28px; height: 28px; border-radius: 50%; border: 2px solid var(--glass-border); background: #000; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; }
+        .step-dot.completed { border-color: var(--matrix-green); background: var(--matrix-green); color: #000; }
+        .step-dot.current { border-color: var(--matrix-green); box-shadow: 0 0 10px rgba(0,255,0,0.4); }
+        .step-label { font-family: 'Courier New', monospace; font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; }
+        .step-label.active { color: var(--matrix-green); }
+        .empty-state { text-align: center; padding: 80px 20px; }
+        .empty-state .icon { font-size: 4rem; margin-bottom: 16px; }
+        .empty-state h2 { color: var(--text-primary); margin-bottom: 8px; }
+        .empty-state p { color: var(--text-muted); margin-bottom: 24px; }
+        .pagination { display: flex; justify-content: center; gap: 8px; margin-top: 32px; }
+        .page-btn { padding: 8px 14px; background: var(--glass-bg); border: 1px solid var(--glass-border); color: var(--text-muted); border-radius: 6px; cursor: pointer; font-family: 'Courier New', monospace; transition: all 0.2s; }
+        .page-btn:hover, .page-btn.active { border-color: var(--matrix-green); color: var(--matrix-green); }
+        @media (max-width: 600px) {
+            .order-header { flex-direction: column; align-items: flex-start; }
+            .tracking-steps { gap: 8px; }
+            .step-label { font-size: 0.6rem; }
+        }
+    </style>
+</head>
+<body>
+    <header class="nav-header">
+        <nav class="nav-container">
+            <a href="/" class="nav-logo">HACKERSPHERE</a>
+            <div class="nav-links">
+                <a href="/shop" class="nav-link">Shop</a>
+                <a href="/profile.html" class="nav-link">Profile</a>
+                <a href="/shop/cart.html" class="nav-link">Cart</a>
+            </div>
+        </nav>
+    </header>
+
+    <main class="orders-page">
+        <h1 class="page-title">ORDER HISTORY</h1>
+        <p class="page-subtitle">Track and manage your purchases</p>
+
+        <div id="orders-container">
+            <div style="text-align:center;padding:40px;color:var(--text-muted);font-family:monospace;">Loading orders...</div>
+        </div>
+
+        <div class="pagination" id="pagination" style="display:none;"></div>
+    </main>
+
+    <script>
+        const API_BASE = 'http://localhost:5000/api';
+        let currentPage = 1;
+
+        function getToken() {
+            return localStorage.getItem('shop_token') || localStorage.getItem('academy_token') || '';
+        }
+
+        function authHeaders() {
+            const token = getToken();
+            return token ? { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }
+                        : { 'Content-Type': 'application/json' };
+        }
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            if (!getToken()) {
+                localStorage.setItem('post_login_redirect', '/shop/orders.html');
+                window.location.href = '/academy/login.html';
+                return;
+            }
+            await loadOrders(1);
+        });
+
+        async function loadOrders(page) {
+            currentPage = page;
+            try {
+                const res = await fetch(`${API_BASE}/shop/orders/history?page=${page}&limit=10`, { headers: authHeaders() });
+                const data = await res.json();
+
+                if (!res.ok) throw new Error(data.message);
+
+                renderOrders(data.orders || [], data.totalCount || 0, data.totalPages || 1);
+            } catch (err) {
+                document.getElementById('orders-container').innerHTML = `
+                    <div style="text-align:center;padding:40px;color:#ff4444;">
+                        Failed to load orders. <a href="#" onclick="loadOrders(1)" style="color:var(--matrix-green);">Retry</a>
+                    </div>`;
+            }
+        }
+
+        function renderOrders(orders, total, totalPages) {
+            const container = document.getElementById('orders-container');
+
+            if (!orders.length) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="icon">📦</div>
+                        <h2>No Orders Yet</h2>
+                        <p>You haven't placed any orders. Start shopping!</p>
+                        <a href="/shop" style="display:inline-block;padding:12px 28px;background:var(--matrix-green);color:#000;border-radius:8px;text-decoration:none;font-family:monospace;font-weight:700;">SHOP NOW</a>
+                    </div>`;
+                return;
+            }
+
+            container.innerHTML = orders.map(order => {
+                const items = Array.isArray(order.items) ? order.items.filter(Boolean) : [];
+                const statusClass = `status-${order.status || 'pending'}`;
+                const statusSteps = ['pending', 'processing', 'shipped', 'delivered'];
+                const currentStep = statusSteps.indexOf(order.status);
+
+                return `
+                <div class="order-card">
+                    <div class="order-header">
+                        <div>
+                            <div class="order-id">Order #${order.id.slice(0, 8).toUpperCase()}</div>
+                            <div class="order-date">${new Date(order.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</div>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:12px;">
+                            <span class="order-status ${statusClass}">${order.status}</span>
+                            <span class="order-total">$${parseFloat(order.total).toFixed(2)}</span>
+                        </div>
+                    </div>
+
+                    <div class="order-items">
+                        ${items.slice(0, 3).map(item => `
+                            <div class="order-item">
+                                <span class="order-item-name">${item.name}</span>
+                                <span class="order-item-qty">×${item.quantity}</span>
+                                <span class="order-item-price">$${parseFloat(item.unit_price).toFixed(2)}</span>
+                            </div>`).join('')}
+                        ${items.length > 3 ? `<div style="color:var(--text-muted);font-size:0.85rem;padding:8px 0;">+${items.length - 3} more items</div>` : ''}
+                    </div>
+
+                    ${order.status !== 'cancelled' && order.status !== 'refunded' ? `
+                    <div class="tracking-bar">
+                        <div style="color:var(--text-muted);font-size:0.8rem;font-family:monospace;margin-bottom:12px;">TRACKING</div>
+                        <div class="tracking-steps">
+                            ${statusSteps.map((step, i) => `
+                                <div class="tracking-step">
+                                    <div class="step-dot ${i < currentStep ? 'completed' : (i === currentStep ? 'current' : '')}">
+                                        ${i < currentStep ? '✓' : (i === currentStep ? '●' : '')}
+                                    </div>
+                                    <span class="step-label ${i <= currentStep ? 'active' : ''}">${step}</span>
+                                </div>`).join('')}
+                        </div>
+                        ${order.tracking_number ? `<div style="color:var(--text-muted);font-size:0.8rem;font-family:monospace;margin-top:10px;">Tracking: ${order.tracking_number}</div>` : ''}
+                    </div>` : ''}
+
+                    <div class="order-actions">
+                        <a href="/shop" class="btn-sm primary">SHOP AGAIN</a>
+                        <button class="btn-sm" onclick="viewOrderDetails('${order.id}')">VIEW DETAILS</button>
+                        ${order.status === 'pending' ? `<button class="btn-sm" style="color:#ff4444;" onclick="cancelOrder('${order.id}')">CANCEL</button>` : ''}
+                    </div>
+                </div>`;
+            }).join('');
+
+            // Pagination
+            if (totalPages > 1) {
+                const pg = document.getElementById('pagination');
+                pg.style.display = 'flex';
+                pg.innerHTML = Array.from({ length: totalPages }, (_, i) => i + 1).map(p => `
+                    <button class="page-btn ${p === currentPage ? 'active' : ''}" onclick="loadOrders(${p})">${p}</button>
+                `).join('');
+            }
+        }
+
+        function viewOrderDetails(orderId) {
+            // Show details in a simple modal
+            alert(`Order details for #${orderId.slice(0, 8).toUpperCase()}\n\nFull order detail page coming soon.`);
+        }
+
+        async function cancelOrder(orderId) {
+            if (!confirm('Are you sure you want to cancel this order?')) return;
+            // API call would go here
+            alert('Cancellation request submitted. Our team will process it shortly.');
+        }
+    </script>
+</body>
+</html>

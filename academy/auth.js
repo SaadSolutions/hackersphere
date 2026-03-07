@@ -177,34 +177,33 @@ class AcademyAuth {
   // ============================================================================
 
   /**
-   * Simulate login (replace with actual auth flow later)
-   * @param {string} username - Username for demo
-   * @param {string} password - Password for demo
+   * Login via backend API
+   * @param {string} emailOrUsername - Email or username
+   * @param {string} password - Password
    */
-  async login(username, password) {
-    try {
-      // TODO: Replace with actual authentication endpoint
-      // For now, create mock data
-      const mockUser = {
-        id: '1',
-        username: username || 'demo',
-        email: `${username || 'demo'}@hackersphere.com`,
-        role: 'student',
-        created_at: new Date().toISOString(),
-        last_login: new Date().toISOString()
-      };
+  async login(emailOrUsername, password) {
+    const API_BASE = 'http://localhost:5000/api';
+    // Determine if input is email or username
+    const isEmail = emailOrUsername.includes('@');
+    const body = isEmail
+      ? { email: emailOrUsername, password }
+      : { email: emailOrUsername, password }; // backend accepts email; username lookup handled server-side
 
-      const mockToken = `mock_token_${Date.now()}_${Math.random().toString(36).substring(2)}`;
+    const res = await fetch(`${API_BASE}/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: emailOrUsername, password }),
+    });
 
-      this.setAuth(mockUser, mockToken);
-      Utils.showToast('Login successful', 'success');
-      return { user: mockUser, token: mockToken };
-
-    } catch (error) {
-      console.error('Login error:', error);
-      Utils.showToast('Login failed', 'error');
-      throw error;
+    const data = await res.json();
+    if (!res.ok) {
+      throw new Error(data.message || 'Login failed');
     }
+
+    this.setAuth(data.user, data.token);
+    // Also store shop token for cross-module auth
+    localStorage.setItem('shop_token', data.token);
+    return data;
   }
 
   /**

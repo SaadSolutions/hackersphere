@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search - HackerSphere</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="academy/styles.css">
+    <style>
+        .search-page { max-width: 1100px; margin: 90px auto 60px; padding: 0 20px; }
+        .search-hero { text-align: center; padding: 40px 20px; }
+        .search-hero h1 { color: var(--matrix-green, #00ff00); font-family: 'Courier New', monospace; font-size: 2rem; letter-spacing: 2px; margin-bottom: 8px; }
+        .search-hero p { color: #888; margin-bottom: 28px; }
+        .search-bar-wrap { display: flex; gap: 10px; max-width: 600px; margin: 0 auto; }
+        .search-input { flex: 1; background: rgba(0,0,0,0.6); border: 1px solid rgba(0,255,0,0.3); color: #fff; padding: 14px 20px; border-radius: 8px; font-family: 'Courier New', monospace; font-size: 1rem; }
+        .search-input:focus { outline: none; border-color: var(--matrix-green, #00ff00); box-shadow: 0 0 12px rgba(0,255,0,0.2); }
+        .btn-search { background: var(--matrix-green, #00ff00); color: #000; border: none; padding: 14px 28px; border-radius: 8px; font-family: 'Courier New', monospace; font-weight: 700; cursor: pointer; font-size: 1rem; }
+        .filter-tabs { display: flex; gap: 8px; margin: 28px 0 20px; justify-content: center; flex-wrap: wrap; }
+        .filter-tab { padding: 8px 20px; border-radius: 20px; border: 1px solid rgba(0,255,0,0.2); color: #888; cursor: pointer; font-family: 'Courier New', monospace; font-size: 0.85rem; background: transparent; transition: all 0.2s; }
+        .filter-tab.active, .filter-tab:hover { border-color: var(--matrix-green, #00ff00); color: var(--matrix-green, #00ff00); background: rgba(0,255,0,0.08); }
+        .results-meta { color: #888; font-family: 'Courier New', monospace; font-size: 0.85rem; margin-bottom: 20px; }
+        .results-meta span { color: var(--matrix-green, #00ff00); }
+        .results-grid { display: grid; gap: 16px; }
+        .result-card { display: flex; gap: 16px; background: rgba(0,255,0,0.03); border: 1px solid rgba(0,255,0,0.1); border-radius: 10px; padding: 16px; text-decoration: none; color: inherit; transition: all 0.2s; }
+        .result-card:hover { border-color: rgba(0,255,0,0.4); background: rgba(0,255,0,0.06); transform: translateX(4px); }
+        .result-thumb { width: 80px; height: 80px; border-radius: 8px; object-fit: cover; flex-shrink: 0; }
+        .result-info { flex: 1; }
+        .result-type { font-size: 0.7rem; font-family: 'Courier New', monospace; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+        .type-course { color: #0096ff; }
+        .type-product { color: var(--matrix-green, #00ff00); }
+        .result-title { color: #fff; font-weight: 600; font-size: 1rem; margin-bottom: 4px; line-height: 1.3; }
+        .result-desc { color: #888; font-size: 0.85rem; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .result-meta { display: flex; gap: 12px; margin-top: 8px; flex-wrap: wrap; }
+        .result-badge { font-size: 0.75rem; padding: 2px 8px; border-radius: 12px; font-family: 'Courier New', monospace; }
+        .badge-beginner { background: rgba(0,200,0,0.1); color: #00c800; border: 1px solid rgba(0,200,0,0.3); }
+        .badge-intermediate { background: rgba(255,170,0,0.1); color: #ffaa00; border: 1px solid rgba(255,170,0,0.3); }
+        .badge-advanced { background: rgba(255,68,68,0.1); color: #ff4444; border: 1px solid rgba(255,68,68,0.3); }
+        .price-tag { color: var(--matrix-green, #00ff00); font-family: 'Courier New', monospace; font-weight: 700; font-size: 0.9rem; }
+        .no-results { text-align: center; padding: 60px 20px; }
+        .no-results .icon { font-size: 4rem; margin-bottom: 16px; }
+        .no-results h2 { color: #fff; margin-bottom: 8px; }
+        .no-results p { color: #888; }
+        .suggestions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 16px; justify-content: center; }
+        .suggestion-chip { padding: 6px 14px; border: 1px solid rgba(0,255,0,0.2); color: var(--matrix-green, #00ff00); border-radius: 20px; cursor: pointer; font-size: 0.85rem; font-family: 'Courier New', monospace; background: transparent; }
+        .suggestion-chip:hover { background: rgba(0,255,0,0.1); }
+        .loading-dots::after { content: '...'; animation: dots 1.5s infinite; }
+        @keyframes dots { 0%,20% { content: '.'; } 40% { content: '..'; } 60%,100% { content: '...'; } }
+    </style>
+</head>
+<body>
+    <header class="academy-header">
+        <nav class="academy-nav academy-container">
+            <a href="/" class="academy-title">HACKERSPHERE</a>
+            <div class="academy-nav-links">
+                <a href="/academy/catalog.html" class="academy-nav-link">Academy</a>
+                <a href="/shop" class="academy-nav-link">Shop</a>
+                <a href="/profile.html" class="academy-nav-link">Profile</a>
+            </div>
+        </nav>
+    </header>
+
+    <main class="search-page">
+        <div class="search-hero">
+            <h1>SEARCH</h1>
+            <p>Find courses, products, and security resources</p>
+            <div class="search-bar-wrap">
+                <input type="text" class="search-input" id="search-input" placeholder="Search for anything..." autofocus>
+                <button class="btn-search" onclick="performSearch()">SEARCH</button>
+            </div>
+        </div>
+
+        <div class="filter-tabs">
+            <button class="filter-tab active" data-filter="all" onclick="setFilter('all', this)">All Results</button>
+            <button class="filter-tab" data-filter="courses" onclick="setFilter('courses', this)">Courses</button>
+            <button class="filter-tab" data-filter="products" onclick="setFilter('products', this)">Products</button>
+        </div>
+
+        <div class="results-meta" id="results-meta" style="display:none;"></div>
+        <div class="results-grid" id="results-container"></div>
+    </main>
+
+    <script>
+        const API = 'http://localhost:5000/api';
+        let allResults = { courses: [], products: [] };
+        let currentFilter = 'all';
+
+        const suggestions = ['ethical hacking', 'firewall', 'encryption', 'network security', 'malware', 'vpn', 'antivirus', 'penetration testing'];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const params = new URLSearchParams(window.location.search);
+            const q = params.get('q') || '';
+            if (q) {
+                document.getElementById('search-input').value = q;
+                performSearch();
+            } else {
+                showSuggestions();
+            }
+
+            document.getElementById('search-input').addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') performSearch();
+            });
+        });
+
+        function setFilter(filter, btn) {
+            currentFilter = filter;
+            document.querySelectorAll('.filter-tab').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            renderResults();
+        }
+
+        async function performSearch() {
+            const q = document.getElementById('search-input').value.trim();
+            if (!q) { showSuggestions(); return; }
+
+            // Update URL
+            const url = new URL(window.location);
+            url.searchParams.set('q', q);
+            window.history.pushState({}, '', url);
+
+            document.getElementById('results-meta').style.display = 'block';
+            document.getElementById('results-meta').innerHTML = `<span class="loading-dots">Searching for "${q}"</span>`;
+            document.getElementById('results-container').innerHTML = '';
+
+            try {
+                const [coursesRes, productsRes] = await Promise.all([
+                    fetch(`${API}/academy/courses/search?q=${encodeURIComponent(q)}`),
+                    fetch(`${API}/shop/products?search=${encodeURIComponent(q)}&limit=20`),
+                ]);
+
+                const coursesData = await coursesRes.json();
+                const productsData = await productsRes.json();
+
+                allResults.courses = coursesData.courses || [];
+                allResults.products = productsData.products || [];
+
+                renderResults(q);
+            } catch (err) {
+                document.getElementById('results-container').innerHTML = `
+                    <div class="no-results">
+                        <div class="icon">⚠️</div>
+                        <h2>Search Failed</h2>
+                        <p>Could not connect to the server. Is it running?</p>
+                    </div>`;
+            }
+        }
+
+        function renderResults(query) {
+            const q = query || document.getElementById('search-input').value;
+            let courses = allResults.courses;
+            let products = allResults.products;
+
+            if (currentFilter === 'courses') products = [];
+            if (currentFilter === 'products') courses = [];
+
+            const total = courses.length + products.length;
+            const meta = document.getElementById('results-meta');
+            meta.style.display = 'block';
+            meta.innerHTML = total
+                ? `Found <span>${total}</span> result${total !== 1 ? 's' : ''} for "<span>${q}</span>"`
+                : '';
+
+            if (!total) {
+                document.getElementById('results-container').innerHTML = `
+                    <div class="no-results">
+                        <div class="icon">🔍</div>
+                        <h2>No Results Found</h2>
+                        <p>Try different keywords or browse our suggestions:</p>
+                        <div class="suggestions">
+                            ${suggestions.map(s => `<button class="suggestion-chip" onclick="searchFor('${s}')">${s}</button>`).join('')}
+                        </div>
+                    </div>`;
+                return;
+            }
+
+            const courseCards = courses.map(c => `
+                <a class="result-card" href="/academy/course.html?slug=${c.slug}">
+                    <img class="result-thumb" src="${c.thumbnail_url || `https://placehold.co/80x80/0a0a0a/00ff41?text=C`}" alt="${c.title}">
+                    <div class="result-info">
+                        <div class="result-type type-course">📚 COURSE</div>
+                        <div class="result-title">${highlight(c.title, q)}</div>
+                        <div class="result-desc">${c.short_description || c.description || ''}</div>
+                        <div class="result-meta">
+                            <span class="result-badge badge-${c.difficulty_level}">${c.difficulty_level}</span>
+                            ${c.category ? `<span class="result-badge" style="background:rgba(0,150,255,0.1);color:#0096ff;border:1px solid rgba(0,150,255,0.3);">${c.category}</span>` : ''}
+                            <span style="color:#888;font-size:0.8rem;">⏱ ${c.estimated_duration_hours}h</span>
+                            <span style="color:#ffd700;font-size:0.8rem;">★ ${(c.rating || 0).toFixed(1)}</span>
+                        </div>
+                    </div>
+                </a>`).join('');
+
+            const productCards = products.map(p => {
+                const img = Array.isArray(p.images) ? (p.images[0]?.url || p.images[0]) : '';
+                return `
+                <a class="result-card" href="/shop/product.html?slug=${p.slug}">
+                    <img class="result-thumb" src="${img || `https://placehold.co/80x80/0a0a0a/00ff41?text=P`}" alt="${p.name}">
+                    <div class="result-info">
+                        <div class="result-type type-product">🛒 PRODUCT</div>
+                        <div class="result-title">${highlight(p.name, q)}</div>
+                        <div class="result-desc">${p.short_description || ''}</div>
+                        <div class="result-meta">
+                            <span class="price-tag">$${parseFloat(p.price).toFixed(2)}</span>
+                            ${p.category ? `<span class="result-badge" style="background:rgba(0,255,65,0.08);color:#00ff41;border:1px solid rgba(0,255,65,0.2);">${p.category}</span>` : ''}
+                            <span style="color:#ffd700;font-size:0.8rem;">★ ${(p.rating || 0).toFixed(1)}</span>
+                        </div>
+                    </div>
+                </a>`}).join('');
+
+            // Interleave: courses first then products (or based on filter)
+            document.getElementById('results-container').innerHTML = courseCards + productCards;
+        }
+
+        function highlight(text, query) {
+            if (!query) return text;
+            const re = new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+            return text.replace(re, '<mark style="background:rgba(0,255,0,0.25);color:inherit;border-radius:2px;">$1</mark>');
+        }
+
+        function showSuggestions() {
+            document.getElementById('results-meta').style.display = 'none';
+            document.getElementById('results-container').innerHTML = `
+                <div class="no-results">
+                    <div class="icon">🔍</div>
+                    <h2>Start Searching</h2>
+                    <p>Explore our courses and security products:</p>
+                    <div class="suggestions">
+                        ${suggestions.map(s => `<button class="suggestion-chip" onclick="searchFor('${s}')">${s}</button>`).join('')}
+                    </div>
+                </div>`;
+        }
+
+        function searchFor(term) {
+            document.getElementById('search-input').value = term;
+            performSearch();
+        }
+    </script>
+</body>
+</html>

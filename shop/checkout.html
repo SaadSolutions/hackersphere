@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout - HackerSphere Shop</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://js.stripe.com/v3/"></script>
+    <style>
+        .checkout-page { max-width: 1100px; margin: 100px auto 60px; padding: 0 20px; }
+        .checkout-grid { display: grid; grid-template-columns: 1fr 380px; gap: 40px; }
+        .checkout-section { background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 12px; padding: 28px; margin-bottom: 24px; }
+        .checkout-section h2 { color: var(--matrix-green); font-family: 'Courier New', monospace; font-size: 1.1rem; letter-spacing: 2px; margin-bottom: 20px; text-transform: uppercase; border-bottom: 1px solid var(--glass-border); padding-bottom: 12px; }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .form-group { margin-bottom: 16px; }
+        .form-group label { display: block; color: var(--text-secondary); font-size: 0.85rem; font-family: 'Courier New', monospace; margin-bottom: 6px; }
+        .form-group input, .form-group select { width: 100%; background: rgba(0,0,0,0.4); border: 1px solid var(--glass-border); color: var(--text-primary); padding: 10px 14px; border-radius: 6px; font-family: 'Courier New', monospace; font-size: 0.9rem; box-sizing: border-box; transition: border-color 0.2s; }
+        .form-group input:focus, .form-group select:focus { outline: none; border-color: var(--matrix-green); box-shadow: 0 0 8px rgba(0,255,0,0.15); }
+        .form-group input.error { border-color: #ff4444; }
+        .field-error { color: #ff4444; font-size: 0.8rem; margin-top: 4px; display: none; }
+        .shipping-option { display: flex; align-items: center; gap: 12px; padding: 14px; border: 1px solid var(--glass-border); border-radius: 8px; margin-bottom: 10px; cursor: pointer; transition: all 0.2s; }
+        .shipping-option:hover, .shipping-option.selected { border-color: var(--matrix-green); background: rgba(0,255,0,0.05); }
+        .shipping-option input[type="radio"] { accent-color: var(--matrix-green); }
+        .shipping-option .ship-name { color: var(--text-primary); font-weight: 600; }
+        .shipping-option .ship-days { color: var(--text-muted); font-size: 0.85rem; }
+        .shipping-option .ship-price { margin-left: auto; color: var(--matrix-green); font-family: 'Courier New', monospace; font-weight: 700; }
+        .payment-element { background: rgba(0,0,0,0.3); border: 1px solid var(--glass-border); border-radius: 8px; padding: 16px; min-height: 120px; }
+        #card-errors { color: #ff4444; font-size: 0.85rem; margin-top: 8px; font-family: 'Courier New', monospace; }
+        .order-summary { position: sticky; top: 100px; }
+        .summary-items { max-height: 300px; overflow-y: auto; margin-bottom: 20px; }
+        .summary-item { display: flex; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--glass-border); }
+        .summary-item img { width: 50px; height: 50px; object-fit: cover; border-radius: 6px; }
+        .summary-item-info { flex: 1; }
+        .summary-item-name { color: var(--text-primary); font-size: 0.9rem; line-height: 1.3; }
+        .summary-item-qty { color: var(--text-muted); font-size: 0.8rem; }
+        .summary-item-price { color: var(--matrix-green); font-family: 'Courier New', monospace; }
+        .summary-totals { border-top: 1px solid var(--glass-border); padding-top: 16px; }
+        .summary-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.9rem; color: var(--text-secondary); }
+        .summary-row.total { color: var(--text-primary); font-weight: 700; font-size: 1.1rem; border-top: 1px solid var(--glass-border); padding-top: 12px; margin-top: 8px; }
+        .summary-row .amount { color: var(--matrix-green); font-family: 'Courier New', monospace; }
+        .discount-input { display: flex; gap: 8px; margin-bottom: 16px; }
+        .discount-input input { flex: 1; }
+        .btn-apply { background: transparent; border: 1px solid var(--matrix-green); color: var(--matrix-green); padding: 10px 16px; border-radius: 6px; cursor: pointer; font-family: 'Courier New', monospace; font-size: 0.85rem; white-space: nowrap; transition: all 0.2s; }
+        .btn-apply:hover { background: rgba(0,255,0,0.1); }
+        .discount-success { color: var(--matrix-green); font-size: 0.85rem; font-family: 'Courier New', monospace; }
+        .btn-place-order { width: 100%; background: var(--matrix-green); color: #000; border: none; padding: 16px; border-radius: 8px; font-family: 'Courier New', monospace; font-size: 1rem; font-weight: 700; letter-spacing: 1px; cursor: pointer; transition: all 0.3s; margin-top: 16px; }
+        .btn-place-order:hover:not(:disabled) { background: #00dd00; box-shadow: 0 0 20px rgba(0,255,0,0.4); }
+        .btn-place-order:disabled { opacity: 0.5; cursor: not-allowed; }
+        .secure-badge { display: flex; align-items: center; justify-content: center; gap: 6px; color: var(--text-muted); font-size: 0.8rem; margin-top: 12px; }
+        .step-indicator { display: flex; gap: 0; margin-bottom: 32px; }
+        .step { flex: 1; text-align: center; padding: 10px; font-family: 'Courier New', monospace; font-size: 0.8rem; color: var(--text-muted); position: relative; }
+        .step::after { content: '▶'; position: absolute; right: -8px; top: 50%; transform: translateY(-50%); color: var(--glass-border); font-size: 0.7rem; }
+        .step:last-child::after { display: none; }
+        .step.active { color: var(--matrix-green); }
+        .step.completed { color: var(--matrix-green); opacity: 0.7; }
+        .success-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 1000; align-items: center; justify-content: center; }
+        .success-overlay.show { display: flex; }
+        .success-box { background: var(--glass-bg); border: 1px solid var(--matrix-green); border-radius: 16px; padding: 48px; text-align: center; max-width: 480px; }
+        .success-icon { font-size: 4rem; margin-bottom: 16px; }
+        .success-box h2 { color: var(--matrix-green); font-family: 'Courier New', monospace; font-size: 1.5rem; margin-bottom: 12px; }
+        .success-box p { color: var(--text-secondary); margin-bottom: 24px; }
+        .success-box .order-id { font-family: 'Courier New', monospace; color: var(--matrix-green); font-size: 0.9rem; background: rgba(0,255,0,0.1); padding: 8px 16px; border-radius: 6px; display: inline-block; margin-bottom: 24px; }
+        @media (max-width: 768px) {
+            .checkout-grid { grid-template-columns: 1fr; }
+            .form-row { grid-template-columns: 1fr; }
+            .order-summary { position: static; }
+        }
+    </style>
+</head>
+<body>
+    <header class="nav-header">
+        <nav class="nav-container">
+            <a href="/" class="nav-logo">HACKERSPHERE</a>
+            <div class="nav-links">
+                <a href="/shop" class="nav-link">Shop</a>
+                <a href="/academy/catalog.html" class="nav-link">Academy</a>
+                <a href="/shop/cart.html" class="nav-link">Cart</a>
+            </div>
+        </nav>
+    </header>
+
+    <main class="checkout-page">
+        <div class="step-indicator">
+            <div class="step completed">CART</div>
+            <div class="step active">CHECKOUT</div>
+            <div class="step">CONFIRMATION</div>
+        </div>
+
+        <div class="checkout-grid">
+            <!-- Left: Forms -->
+            <div class="checkout-forms">
+                <!-- Shipping Address -->
+                <div class="checkout-section">
+                    <h2>📦 Shipping Address</h2>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>First Name *</label>
+                            <input type="text" id="first-name" placeholder="John" autocomplete="given-name">
+                            <div class="field-error" id="err-first-name">Required</div>
+                        </div>
+                        <div class="form-group">
+                            <label>Last Name *</label>
+                            <input type="text" id="last-name" placeholder="Doe" autocomplete="family-name">
+                            <div class="field-error" id="err-last-name">Required</div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Email Address *</label>
+                        <input type="email" id="email" placeholder="john@example.com" autocomplete="email">
+                        <div class="field-error" id="err-email">Valid email required</div>
+                    </div>
+                    <div class="form-group">
+                        <label>Street Address *</label>
+                        <input type="text" id="address-line1" placeholder="123 Main Street" autocomplete="address-line1">
+                        <div class="field-error" id="err-address">Required</div>
+                    </div>
+                    <div class="form-group">
+                        <label>Apartment, suite, etc.</label>
+                        <input type="text" id="address-line2" placeholder="Apt 4B" autocomplete="address-line2">
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>City *</label>
+                            <input type="text" id="city" placeholder="New York" autocomplete="address-level2">
+                            <div class="field-error" id="err-city">Required</div>
+                        </div>
+                        <div class="form-group">
+                            <label>State / Province *</label>
+                            <input type="text" id="state" placeholder="NY" autocomplete="address-level1">
+                            <div class="field-error" id="err-state">Required</div>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>ZIP / Postal Code *</label>
+                            <input type="text" id="postal-code" placeholder="10001" autocomplete="postal-code">
+                            <div class="field-error" id="err-postal">Required</div>
+                        </div>
+                        <div class="form-group">
+                            <label>Country *</label>
+                            <select id="country" autocomplete="country">
+                                <option value="US">United States</option>
+                                <option value="GB">United Kingdom</option>
+                                <option value="CA">Canada</option>
+                                <option value="AU">Australia</option>
+                                <option value="DE">Germany</option>
+                                <option value="FR">France</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Shipping Method -->
+                <div class="checkout-section">
+                    <h2>🚚 Shipping Method</h2>
+                    <div id="shipping-options">
+                        <div class="shipping-option selected" data-method="standard" data-price="9.99">
+                            <input type="radio" name="shipping" value="standard" checked>
+                            <div>
+                                <div class="ship-name">Standard Shipping</div>
+                                <div class="ship-days">5–7 business days</div>
+                            </div>
+                            <span class="ship-price">$9.99</span>
+                        </div>
+                        <div class="shipping-option" data-method="express" data-price="19.99">
+                            <input type="radio" name="shipping" value="express">
+                            <div>
+                                <div class="ship-name">Express Shipping</div>
+                                <div class="ship-days">2–3 business days</div>
+                            </div>
+                            <span class="ship-price">$19.99</span>
+                        </div>
+                        <div class="shipping-option" data-method="overnight" data-price="39.99">
+                            <input type="radio" name="shipping" value="overnight">
+                            <div>
+                                <div class="ship-name">Overnight Delivery</div>
+                                <div class="ship-days">Next business day</div>
+                            </div>
+                            <span class="ship-price">$39.99</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Payment -->
+                <div class="checkout-section">
+                    <h2>💳 Payment</h2>
+                    <div id="payment-element" class="payment-element">
+                        <!-- Stripe Elements mount here -->
+                        <div id="card-element" style="padding: 8px 0;"></div>
+                    </div>
+                    <div id="card-errors" role="alert"></div>
+                    <p style="color: var(--text-muted); font-size: 0.8rem; margin-top: 12px; font-family: 'Courier New', monospace;">
+                        🔒 Your payment is encrypted and secure. We never store card details.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Right: Order Summary -->
+            <div class="order-summary">
+                <div class="checkout-section">
+                    <h2>🛒 Order Summary</h2>
+                    <div class="summary-items" id="summary-items">
+                        <div style="color: var(--text-muted); text-align: center; padding: 20px;">Loading cart...</div>
+                    </div>
+
+                    <div class="discount-input">
+                        <input type="text" id="discount-code" placeholder="Discount code" style="text-transform: uppercase;">
+                        <button class="btn-apply" id="apply-discount">APPLY</button>
+                    </div>
+                    <div id="discount-msg" style="display: none;"></div>
+
+                    <div class="summary-totals">
+                        <div class="summary-row">
+                            <span>Subtotal</span>
+                            <span class="amount" id="subtotal">$0.00</span>
+                        </div>
+                        <div class="summary-row" id="discount-row" style="display:none;">
+                            <span>Discount</span>
+                            <span class="amount" style="color: #00ff88;" id="discount-amount">-$0.00</span>
+                        </div>
+                        <div class="summary-row">
+                            <span>Shipping</span>
+                            <span class="amount" id="shipping-cost">$9.99</span>
+                        </div>
+                        <div class="summary-row">
+                            <span>Tax (8%)</span>
+                            <span class="amount" id="tax-amount">$0.00</span>
+                        </div>
+                        <div class="summary-row total">
+                            <span>Total</span>
+                            <span class="amount" id="total-amount">$0.00</span>
+                        </div>
+                    </div>
+
+                    <button class="btn-place-order" id="place-order-btn" disabled>
+                        <span id="btn-text">PLACE ORDER</span>
+                        <span id="btn-loading" style="display:none;">PROCESSING...</span>
+                    </button>
+                    <div class="secure-badge">🔒 SSL Encrypted · Secure Checkout</div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Success Overlay -->
+    <div class="success-overlay" id="success-overlay">
+        <div class="success-box">
+            <div class="success-icon">✅</div>
+            <h2>ORDER CONFIRMED!</h2>
+            <p>Your order has been placed successfully.</p>
+            <div class="order-id" id="confirm-order-id"></div>
+            <p style="font-size: 0.85rem; color: var(--text-muted);">You'll receive a confirmation email shortly.</p>
+            <a href="/shop/orders.html" style="display: inline-block; background: var(--matrix-green); color: #000; padding: 12px 28px; border-radius: 8px; text-decoration: none; font-family: 'Courier New', monospace; font-weight: 700; margin-top: 8px;">VIEW ORDERS</a>
+        </div>
+    </div>
+
+    <script src="api.js"></script>
+    <script src="checkout.js"></script>
+</body>
+</html>
