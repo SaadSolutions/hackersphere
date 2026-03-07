@@ -22,12 +22,17 @@
         <nav class="academy-nav academy-container">
             <a href="/" class="academy-title">HACKERSPHERE</a>
 
-            <div class="academy-nav-links">
+            <div class="academy-nav-links" id="academy-nav-links">
                 <a href="/academy/catalog" class="academy-nav-link" data-page="catalog">Catalog</a>
                 <a href="/academy/dashboard" class="academy-nav-link" data-page="dashboard">Dashboard</a>
                 <button id="auth-button" class="academy-button small secondary">Login</button>
             </div>
+            <button class="academy-hamburger" id="academy-hamburger" aria-label="Toggle navigation" aria-expanded="false">☰</button>
         </nav>
+        <div class="academy-mobile-nav" id="academy-mobile-nav">
+            <a href="/academy/catalog" class="academy-nav-link">Catalog</a>
+            <a href="/academy/dashboard" class="academy-nav-link">Dashboard</a>
+        </div>
     </header>
 
     <!-- Main Content -->
@@ -43,6 +48,7 @@
     </main>
 
     <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.6/dist/purify.min.js"></script>
     <script src="../code.js"></script>
     <script src="api.js"></script>
     <script src="auth.js"></script>
@@ -121,15 +127,58 @@
 
         // Setup router for navigation
         if (window.AcademyRouter) {
-            // Add course route handler
             window.AcademyRouter.addRoute('course/:courseSlug', (params) => {
-                // This would be called when navigating to course pages
                 console.log('Course detail page navigated to:', params);
+            });
+        }
+
+        // Mobile hamburger
+        const hamburger = document.getElementById('academy-hamburger');
+        const mobileNav = document.getElementById('academy-mobile-nav');
+        if (hamburger && mobileNav) {
+            hamburger.addEventListener('click', () => {
+                const isOpen = mobileNav.classList.toggle('open');
+                hamburger.setAttribute('aria-expanded', String(isOpen));
+                hamburger.textContent = isOpen ? '✕' : '☰';
             });
         }
     </script>
 
     <style>
+    /* Mobile hamburger */
+    .academy-hamburger {
+        display: none;
+        background: none;
+        border: 1px solid var(--matrix-green);
+        color: var(--matrix-green);
+        padding: 6px 12px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 1.3rem;
+        line-height: 1;
+    }
+
+    .academy-mobile-nav {
+        display: none;
+        flex-direction: column;
+        background: var(--hacker-grey);
+        border-top: 1px solid var(--matrix-green);
+        padding: 10px 0;
+    }
+
+    .academy-mobile-nav.open { display: flex; }
+
+    .academy-mobile-nav .academy-nav-link {
+        padding: 12px 24px;
+        border-radius: 0;
+        text-align: left;
+    }
+
+    @media (max-width: 768px) {
+        .academy-nav-links { display: none !important; }
+        .academy-hamburger { display: block; }
+    }
+
     /* Course Detail Specific Styles */
 
     .course-header {

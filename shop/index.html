@@ -12,7 +12,7 @@
 </head>
 <body>
     <!-- Navigation -->
-    <nav class="navbar">
+    <nav class="navbar" id="main-navbar">
         <div class="container">
             <div class="nav-brand">
                 <a href="/" class="brand-link">
@@ -24,11 +24,24 @@
                 <a href="/" class="nav-link">Home</a>
                 <a href="/academy/" class="nav-link">Academy</a>
                 <div class="cart-container">
-                    <button class="cart-button" id="cart-button">
+                    <button class="cart-button" id="cart-button" aria-label="Open cart">
                         <span class="cart-icon">🛒</span>
                         <span class="cart-count" id="cart-count">0</span>
                     </button>
                 </div>
+            </div>
+            <button class="hamburger-btn" id="hamburger-btn" aria-label="Toggle navigation" aria-expanded="false" aria-controls="mobile-nav">
+                <span class="hamburger-icon">☰</span>
+            </button>
+        </div>
+        <div class="mobile-nav" id="mobile-nav" role="navigation" aria-label="Mobile navigation">
+            <a href="/" class="nav-link">Home</a>
+            <a href="/academy/" class="nav-link">Academy</a>
+            <div class="cart-container">
+                <button class="cart-button" id="mobile-cart-button" aria-label="Open cart">
+                    <span class="cart-icon">🛒</span>
+                    <span class="cart-count" id="mobile-cart-count">0</span>
+                </button>
             </div>
         </div>
     </nav>
@@ -248,6 +261,37 @@
     <div class="overlay" id="overlay"></div>
 
     <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.6/dist/purify.min.js"></script>
     <script src="../matrix.js"></script>
+    <script>
+        // Mobile hamburger menu toggle
+        const hamburgerBtn = document.getElementById('hamburger-btn');
+        const mobileNav = document.getElementById('mobile-nav');
+
+        if (hamburgerBtn && mobileNav) {
+            hamburgerBtn.addEventListener('click', () => {
+                const isOpen = mobileNav.classList.toggle('open');
+                hamburgerBtn.setAttribute('aria-expanded', String(isOpen));
+                hamburgerBtn.querySelector('.hamburger-icon').textContent = isOpen ? '✕' : '☰';
+            });
+
+            // Close mobile nav when a link is clicked
+            mobileNav.querySelectorAll('.nav-link').forEach(link => {
+                link.addEventListener('click', () => {
+                    mobileNav.classList.remove('open');
+                    hamburgerBtn.setAttribute('aria-expanded', 'false');
+                    hamburgerBtn.querySelector('.hamburger-icon').textContent = '☰';
+                });
+            });
+
+            // Sync mobile cart count with main cart count
+            const mobilCartBtn = document.getElementById('mobile-cart-button');
+            if (mobilCartBtn) {
+                mobilCartBtn.addEventListener('click', () => {
+                    document.getElementById('cart-button').click();
+                });
+            }
+        }
+    </script>
 </body>
 </html>

@@ -307,20 +307,20 @@ class StoreManager {
         modalBody.innerHTML = `
             <div class="product-detail">
                 <div class="product-detail-header">
-                    <div class="product-detail-category">${product.category}</div>
-                    <div class="product-detail-name">${product.name}</div>
+                    <div class="product-detail-category">${escapeHtml(product.category)}</div>
+                    <div class="product-detail-name">${escapeHtml(product.name)}</div>
                     <div class="product-detail-price">$${product.price.toFixed(2)}</div>
                 </div>
 
                 <div class="product-detail-description">
                     <h4>Description</h4>
-                    <p>${product.description}</p>
+                    <p>${escapeHtml(product.description)}</p>
                 </div>
 
                 <div class="product-detail-features">
                     <h4>Features</h4>
                     <ul>
-                        ${product.features.map(feature => `<li>${feature}</li>`).join('')}
+                        ${product.features.map(feature => `<li>${escapeHtml(feature)}</li>`).join('')}
                     </ul>
                 </div>
 
@@ -328,7 +328,7 @@ class StoreManager {
                     <h4>Specifications</h4>
                     <div class="specs-grid">
                         ${Object.entries(product.specifications).map(([key, value]) =>
-                            `<div class="spec-item"><strong>${key}:</strong> ${value}</div>`
+                            `<div class="spec-item"><strong>${escapeHtml(key)}:</strong> ${escapeHtml(String(value))}</div>`
                         ).join('')}
                     </div>
                 </div>
@@ -341,7 +341,7 @@ class StoreManager {
                 </div>
 
                 <div class="product-detail-actions">
-                    <button class="product-button primary" onclick="storeManager.addToCart('${product.id}')">
+                    <button class="product-button primary" onclick="storeManager.addToCart('${escapeHtml(product.id)}')">
                         Add to Cart - $${product.price.toFixed(2)}
                     </button>
                 </div>

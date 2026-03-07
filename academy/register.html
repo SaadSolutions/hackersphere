@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HackerSphere Academy - Register</title>
+    <link rel="stylesheet" href="../styles.css">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="academy-header">
+        <nav class="academy-nav academy-container">
+            <a href="/" class="academy-title">HACKERSPHERE</a>
+            <div class="academy-nav-links" id="academy-nav-links">
+                <a href="catalog.html" class="academy-nav-link">Catalog</a>
+                <a href="login.html" class="academy-nav-link">Login</a>
+            </div>
+            <button class="academy-hamburger" id="academy-hamburger" aria-label="Toggle navigation" aria-expanded="false">☰</button>
+        </nav>
+        <div class="academy-mobile-nav" id="academy-mobile-nav">
+            <a href="catalog.html" class="academy-nav-link">Catalog</a>
+            <a href="login.html" class="academy-nav-link">Login</a>
+        </div>
+    </header>
+
+    <!-- Register Form -->
+    <main class="academy-main">
+        <section class="academy-section">
+            <div class="academy-container">
+                <div class="auth-card">
+                    <div class="auth-header">
+                        <h1 class="auth-title">CREATE ACCOUNT</h1>
+                        <p class="auth-subtitle">Join the HackerSphere community</p>
+                    </div>
+
+                    <form id="register-form" class="auth-form" novalidate>
+                        <div class="form-row">
+                            <div class="academy-form-group">
+                                <label for="first-name" class="academy-label">First Name</label>
+                                <input
+                                    type="text"
+                                    id="first-name"
+                                    name="first_name"
+                                    class="academy-input"
+                                    placeholder="First"
+                                    autocomplete="given-name"
+                                    required
+                                />
+                                <span class="field-error" id="first-name-error" aria-live="polite"></span>
+                            </div>
+
+                            <div class="academy-form-group">
+                                <label for="last-name" class="academy-label">Last Name</label>
+                                <input
+                                    type="text"
+                                    id="last-name"
+                                    name="last_name"
+                                    class="academy-input"
+                                    placeholder="Last"
+                                    autocomplete="family-name"
+                                    required
+                                />
+                                <span class="field-error" id="last-name-error" aria-live="polite"></span>
+                            </div>
+                        </div>
+
+                        <div class="academy-form-group">
+                            <label for="username" class="academy-label">Username</label>
+                            <input
+                                type="text"
+                                id="username"
+                                name="username"
+                                class="academy-input"
+                                placeholder="your_handle"
+                                autocomplete="username"
+                                required
+                                minlength="3"
+                                maxlength="30"
+                                pattern="[a-zA-Z0-9_]+"
+                            />
+                            <span class="field-hint">3-30 characters. Letters, numbers, underscores only.</span>
+                            <span class="field-error" id="username-error" aria-live="polite"></span>
+                        </div>
+
+                        <div class="academy-form-group">
+                            <label for="email" class="academy-label">Email Address</label>
+                            <input
+                                type="email"
+                                id="email"
+                                name="email"
+                                class="academy-input"
+                                placeholder="you@example.com"
+                                autocomplete="email"
+                                required
+                            />
+                            <span class="field-error" id="email-error" aria-live="polite"></span>
+                        </div>
+
+                        <div class="academy-form-group">
+                            <label for="password" class="academy-label">Password</label>
+                            <div class="password-wrapper">
+                                <input
+                                    type="password"
+                                    id="password"
+                                    name="password"
+                                    class="academy-input"
+                                    placeholder="••••••••"
+                                    autocomplete="new-password"
+                                    required
+                                    minlength="8"
+                                />
+                                <button type="button" class="toggle-password" id="toggle-password" aria-label="Show password">👁</button>
+                            </div>
+                            <div class="password-strength" id="password-strength" aria-live="polite"></div>
+                            <span class="field-hint">Minimum 8 characters. Include uppercase, numbers, and symbols.</span>
+                            <span class="field-error" id="password-error" aria-live="polite"></span>
+                        </div>
+
+                        <div class="academy-form-group">
+                            <label for="confirm-password" class="academy-label">Confirm Password</label>
+                            <div class="password-wrapper">
+                                <input
+                                    type="password"
+                                    id="confirm-password"
+                                    name="confirm_password"
+                                    class="academy-input"
+                                    placeholder="••••••••"
+                                    autocomplete="new-password"
+                                    required
+                                />
+                                <button type="button" class="toggle-confirm" id="toggle-confirm" aria-label="Show password">👁</button>
+                            </div>
+                            <span class="field-error" id="confirm-error" aria-live="polite"></span>
+                        </div>
+
+                        <div class="academy-form-group">
+                            <label class="terms-label">
+                                <input type="checkbox" id="agree-terms" name="agree_terms" required />
+                                <span>I agree to the <a href="/terms" class="auth-link" target="_blank" rel="noopener">Terms of Service</a> and <a href="/privacy" class="auth-link" target="_blank" rel="noopener">Privacy Policy</a></span>
+                            </label>
+                            <span class="field-error" id="terms-error" aria-live="polite"></span>
+                        </div>
+
+                        <div id="register-error" class="auth-message error" role="alert" style="display:none;"></div>
+                        <div id="register-success" class="auth-message success" role="status" style="display:none;"></div>
+
+                        <button type="submit" id="register-submit" class="academy-button full-width">
+                            <span class="btn-text">Create Account</span>
+                            <span class="btn-loading" style="display:none;">Creating account...</span>
+                        </button>
+                    </form>
+
+                    <div class="auth-footer">
+                        <p>Already have an account? <a href="login.html" class="auth-link">Login here</a></p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Scripts -->
+    <script src="api.js"></script>
+    <script src="auth.js"></script>
+    <script src="utils.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Redirect if already logged in
+            if (window.AcademyAPI && window.AcademyAPI.isAuthenticated()) {
+                window.location.href = 'dashboard.html';
+                return;
+            }
+
+            const form = document.getElementById('register-form');
+            const submitBtn = document.getElementById('register-submit');
+            const errorBox = document.getElementById('register-error');
+            const successBox = document.getElementById('register-success');
+            const passwordInput = document.getElementById('password');
+            const confirmInput = document.getElementById('confirm-password');
+
+            // Toggle password visibility
+            function setupToggle(btnId, inputId) {
+                const btn = document.getElementById(btnId);
+                const input = document.getElementById(inputId);
+                if (btn && input) {
+                    btn.addEventListener('click', () => {
+                        const isVisible = input.type === 'text';
+                        input.type = isVisible ? 'password' : 'text';
+                        btn.textContent = isVisible ? '👁' : '🙈';
+                        btn.setAttribute('aria-label', isVisible ? 'Show password' : 'Hide password');
+                    });
+                }
+            }
+            setupToggle('toggle-password', 'password');
+            setupToggle('toggle-confirm', 'confirm-password');
+
+            // Password strength meter
+            passwordInput.addEventListener('input', () => {
+                const val = passwordInput.value;
+                const strengthEl = document.getElementById('password-strength');
+                let score = 0;
+                if (val.length >= 8) score++;
+                if (/[A-Z]/.test(val)) score++;
+                if (/[0-9]/.test(val)) score++;
+                if (/[^A-Za-z0-9]/.test(val)) score++;
+
+                const labels = ['', 'Weak', 'Fair', 'Good', 'Strong'];
+                const colors = ['', '#ff4444', '#ffaa00', '#88cc00', '#00ff00'];
+
+                strengthEl.textContent = val ? `Strength: ${labels[score]}` : '';
+                strengthEl.style.color = colors[score] || '';
+            });
+
+            // Form submission
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                clearErrors();
+
+                const firstName = document.getElementById('first-name').value.trim();
+                const lastName = document.getElementById('last-name').value.trim();
+                const username = document.getElementById('username').value.trim();
+                const email = document.getElementById('email').value.trim();
+                const password = passwordInput.value;
+                const confirmPassword = confirmInput.value;
+                const agreeTerms = document.getElementById('agree-terms').checked;
+
+                // Validation
+                let valid = true;
+
+                if (!firstName) { showFieldError('first-name-error', 'First name is required'); valid = false; }
+                if (!lastName) { showFieldError('last-name-error', 'Last name is required'); valid = false; }
+
+                if (!username) {
+                    showFieldError('username-error', 'Username is required');
+                    valid = false;
+                } else if (!/^[a-zA-Z0-9_]{3,30}$/.test(username)) {
+                    showFieldError('username-error', 'Username must be 3-30 characters (letters, numbers, underscores)');
+                    valid = false;
+                }
+
+                if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) {
+                    showFieldError('email-error', 'Enter a valid email address');
+                    valid = false;
+                }
+
+                if (!password || password.length < 8) {
+                    showFieldError('password-error', 'Password must be at least 8 characters');
+                    valid = false;
+                }
+
+                if (password !== confirmPassword) {
+                    showFieldError('confirm-error', 'Passwords do not match');
+                    valid = false;
+                }
+
+                if (!agreeTerms) {
+                    showFieldError('terms-error', 'You must agree to the terms to continue');
+                    valid = false;
+                }
+
+                if (!valid) return;
+
+                setLoading(true);
+
+                try {
+                    // Call registration API (window.AcademyAuth.register when implemented)
+                    if (window.AcademyAuth && typeof window.AcademyAuth.register === 'function') {
+                        await window.AcademyAuth.register({ firstName, lastName, username, email, password });
+                        successBox.textContent = 'Account created! Redirecting to login...';
+                        successBox.style.display = 'block';
+                        setTimeout(() => window.location.href = 'login.html', 2000);
+                    } else {
+                        // Registration not yet implemented on backend
+                        showFormError('Registration is not yet available. Please check back soon.');
+                    }
+                } catch (error) {
+                    showFormError(error.message || 'Registration failed. Please try again.');
+                } finally {
+                    setLoading(false);
+                }
+            });
+
+            function showFieldError(id, message) {
+                const el = document.getElementById(id);
+                if (el) { el.textContent = message; el.style.display = 'block'; }
+            }
+
+            function clearErrors() {
+                ['first-name-error', 'last-name-error', 'username-error', 'email-error',
+                 'password-error', 'confirm-error', 'terms-error'].forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) { el.textContent = ''; el.style.display = 'none'; }
+                });
+                errorBox.style.display = 'none';
+                successBox.style.display = 'none';
+            }
+
+            function showFormError(message) {
+                errorBox.textContent = message;
+                errorBox.style.display = 'block';
+            }
+
+            function setLoading(loading) {
+                submitBtn.disabled = loading;
+                submitBtn.querySelector('.btn-text').style.display = loading ? 'none' : 'inline';
+                submitBtn.querySelector('.btn-loading').style.display = loading ? 'inline' : 'none';
+            }
+
+            // Mobile hamburger
+            const hamburger = document.getElementById('academy-hamburger');
+            const mobileNav = document.getElementById('academy-mobile-nav');
+            if (hamburger && mobileNav) {
+                hamburger.addEventListener('click', () => {
+                    const isOpen = mobileNav.classList.toggle('open');
+                    hamburger.setAttribute('aria-expanded', String(isOpen));
+                    hamburger.textContent = isOpen ? '✕' : '☰';
+                });
+            }
+        });
+    </script>
+
+    <style>
+    /* Auth page layout */
+    .academy-main {
+        min-height: calc(100vh - 70px);
+        display: flex;
+        align-items: center;
+        padding: var(--spacing-xxl) 0;
+    }
+
+    .auth-card {
+        max-width: 520px;
+        margin: 0 auto;
+        background: var(--hacker-grey);
+        border: 1px solid var(--matrix-green);
+        border-radius: var(--radius-lg);
+        padding: var(--spacing-xxl);
+        box-shadow: 0 0 40px rgba(0, 255, 0, 0.1);
+    }
+
+    .auth-header {
+        text-align: center;
+        margin-bottom: var(--spacing-xl);
+    }
+
+    .auth-title {
+        font-family: var(--font-mono);
+        font-size: 1.8rem;
+        color: var(--matrix-green);
+        text-shadow: 0 0 10px rgba(0, 255, 0, 0.2);
+        margin-bottom: var(--spacing-sm);
+        letter-spacing: 2px;
+    }
+
+    .auth-subtitle {
+        color: var(--text-dim);
+        font-family: var(--font-mono);
+        font-size: 0.9rem;
+    }
+
+    .auth-form {
+        display: flex;
+        flex-direction: column;
+        gap: var(--spacing-lg);
+    }
+
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: var(--spacing-md);
+    }
+
+    .password-wrapper {
+        position: relative;
+    }
+
+    .password-wrapper .academy-input {
+        padding-right: 48px;
+        width: 100%;
+    }
+
+    .toggle-password, .toggle-confirm {
+        position: absolute;
+        right: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-size: 1rem;
+        padding: 4px;
+        color: var(--text-dim);
+    }
+
+    .toggle-password:hover, .toggle-confirm:hover {
+        color: var(--matrix-green);
+    }
+
+    .password-strength {
+        font-family: var(--font-mono);
+        font-size: 0.8rem;
+        margin-top: 4px;
+        min-height: 1.2em;
+    }
+
+    .field-hint {
+        display: block;
+        color: var(--text-dim);
+        font-size: 0.8rem;
+        font-family: var(--font-mono);
+        margin-top: 4px;
+    }
+
+    .field-error {
+        display: none;
+        color: var(--error-red);
+        font-size: 0.85rem;
+        font-family: var(--font-mono);
+        margin-top: 4px;
+    }
+
+    .terms-label {
+        display: flex;
+        align-items: flex-start;
+        gap: var(--spacing-sm);
+        color: var(--text-secondary);
+        cursor: pointer;
+        font-size: 0.9rem;
+        line-height: 1.5;
+    }
+
+    .terms-label input[type="checkbox"] {
+        margin-top: 3px;
+        flex-shrink: 0;
+    }
+
+    .auth-message {
+        padding: var(--spacing-md);
+        border-radius: var(--radius-sm);
+        font-family: var(--font-mono);
+        font-size: 0.9rem;
+        text-align: center;
+    }
+
+    .auth-message.error {
+        background: rgba(255, 68, 68, 0.1);
+        border: 1px solid var(--error-red);
+        color: var(--error-red);
+    }
+
+    .auth-message.success {
+        background: rgba(0, 255, 0, 0.1);
+        border: 1px solid var(--matrix-green);
+        color: var(--matrix-green);
+    }
+
+    .academy-button.full-width {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .auth-footer {
+        text-align: center;
+        margin-top: var(--spacing-xl);
+        color: var(--text-dim);
+        font-size: 0.9rem;
+    }
+
+    .auth-link {
+        color: var(--matrix-green);
+        text-decoration: none;
+        font-family: var(--font-mono);
+    }
+
+    .auth-link:hover { text-decoration: underline; }
+
+    /* Mobile hamburger */
+    .academy-hamburger {
+        display: none;
+        background: none;
+        border: 1px solid var(--matrix-green);
+        color: var(--matrix-green);
+        padding: 6px 12px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 1.3rem;
+        line-height: 1;
+    }
+
+    .academy-mobile-nav {
+        display: none;
+        flex-direction: column;
+        background: var(--hacker-grey);
+        border-top: 1px solid var(--matrix-green);
+        padding: 10px 0;
+    }
+
+    .academy-mobile-nav.open { display: flex; }
+
+    .academy-mobile-nav .academy-nav-link {
+        padding: 12px 24px;
+        border-radius: 0;
+        text-align: left;
+    }
+
+    @media (max-width: 768px) {
+        .academy-nav-links { display: none !important; }
+        .academy-hamburger { display: block; }
+
+        .auth-card { padding: var(--spacing-xl); }
+        .form-row { grid-template-columns: 1fr; }
+    }
+    </style>
+</body>
+</html>

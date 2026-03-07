@@ -280,12 +280,31 @@ const Utils = {
   },
 
   /**
-   * Basic markdown to HTML converter
+   * Sanitize HTML string using DOMPurify (falls back to basic escaping)
+   * @param {string} html - HTML string to sanitize
+   * @returns {string} Sanitized HTML string
+   */
+  sanitizeHtml(html) {
+    if (typeof DOMPurify !== 'undefined') {
+      return DOMPurify.sanitize(html, {
+        ALLOWED_TAGS: ['b', 'i', 'em', 'strong', 'a', 'p', 'br', 'ul', 'ol', 'li',
+                       'code', 'pre', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'blockquote', 'span'],
+        ALLOWED_ATTR: ['href', 'target', 'rel', 'class']
+      });
+    }
+    // Fallback: escape HTML entities
+    const div = document.createElement('div');
+    div.textContent = html;
+    return div.innerHTML;
+  },
+
+  /**
+   * Basic markdown to HTML converter (with sanitization)
    * @param {string} markdown - Markdown text
-   * @returns {string} HTML string
+   * @returns {string} Sanitized HTML string
    */
   markdownToHtml(markdown) {
-    return markdown
+    const rawHtml = markdown
       .replace(/`([^`]*)`/g, '<code>$1</code>')
       .replace(/\*\*([^*]*)\*\*/g, '<strong>$1</strong>')
       .replace(/\*([^*]*)\*/g, '<em>$1</em>')
@@ -294,6 +313,7 @@ const Utils = {
       .replace(/^## (.*$)/gim, '<h2>$1</h2>')
       .replace(/^# (.*$)/gim, '<h1>$1</h1>')
       .replace(/\n/g, '<br>');
+    return this.sanitizeHtml(rawHtml);
   },
 
   /**
