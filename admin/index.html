@@ -274,6 +274,9 @@
             <div class="mf-group"><label>Compare Price</label><input type="number" id="product-compare-price" step="0.01" min="0"></div>
             <div class="mf-group"><label>Category</label><input type="text" id="product-category"></div>
             <div class="mf-group"><label>Stock Quantity</label><input type="number" id="product-stock" min="0"></div>
+            <div class="mf-group modal-full"><label>Image URL</label><input type="url" id="product-image" placeholder="https://example.com/image.jpg"></div>
+            <div class="mf-group modal-full"><label>Features (one per line)</label><textarea id="product-features" rows="4" placeholder="Feature 1&#10;Feature 2&#10;Feature 3"></textarea></div>
+            <div class="mf-group modal-full"><label>Tags (comma separated)</label><input type="text" id="product-tags" placeholder="security, hardware, tools"></div>
             <div class="mf-group"><label><input type="checkbox" id="product-featured"> Featured</label></div>
             <div class="mf-group"><label><input type="checkbox" id="product-active" checked> Active</label></div>
         </div>
@@ -470,7 +473,23 @@ async function loadProducts(page = 1) {
     } catch { showToast('Failed to load products', true); }
 }
 
-function openProductModal() { document.getElementById('product-id').value = ''; document.getElementById('product-modal').classList.add('open'); }
+function openProductModal() {
+    document.getElementById('product-id').value = '';
+    document.getElementById('product-name').value = '';
+    document.getElementById('product-slug').value = '';
+    document.getElementById('product-short-desc').value = '';
+    document.getElementById('product-desc').value = '';
+    document.getElementById('product-price').value = '';
+    document.getElementById('product-compare-price').value = '';
+    document.getElementById('product-category').value = '';
+    document.getElementById('product-stock').value = '';
+    document.getElementById('product-image').value = '';
+    document.getElementById('product-features').value = '';
+    document.getElementById('product-tags').value = '';
+    document.getElementById('product-featured').checked = false;
+    document.getElementById('product-active').checked = true;
+    document.getElementById('product-modal').classList.add('open');
+}
 function editProduct(p) {
     document.getElementById('product-id').value = p.id;
     document.getElementById('product-name').value = p.name;
@@ -481,6 +500,9 @@ function editProduct(p) {
     document.getElementById('product-compare-price').value = p.compare_price || '';
     document.getElementById('product-category').value = p.category || '';
     document.getElementById('product-stock').value = p.inventory_count || 0;
+    document.getElementById('product-image').value = (p.images && p.images[0]?.url) || p.image || '';
+    document.getElementById('product-features').value = (p.features || []).join('\n');
+    document.getElementById('product-tags').value = (p.tags || []).join(', ');
     document.getElementById('product-featured').checked = p.is_featured;
     document.getElementById('product-active').checked = p.is_active;
     document.getElementById('product-modal').classList.add('open');
@@ -489,6 +511,9 @@ function closeProductModal() { document.getElementById('product-modal').classLis
 
 async function saveProduct() {
     const id = document.getElementById('product-id').value;
+    const imageUrl = document.getElementById('product-image').value.trim();
+    const featuresRaw = document.getElementById('product-features').value.trim();
+    const tagsRaw = document.getElementById('product-tags').value.trim();
     const body = {
         name: document.getElementById('product-name').value,
         slug: document.getElementById('product-slug').value,
@@ -500,6 +525,9 @@ async function saveProduct() {
         inventoryCount: parseInt(document.getElementById('product-stock').value) || 0,
         isFeatured: document.getElementById('product-featured').checked,
         isActive: document.getElementById('product-active').checked,
+        images: imageUrl ? [{ url: imageUrl, alt: document.getElementById('product-name').value }] : [],
+        features: featuresRaw ? featuresRaw.split('\n').map(f => f.trim()).filter(Boolean) : [],
+        tags: tagsRaw ? tagsRaw.split(',').map(t => t.trim()).filter(Boolean) : [],
     };
     try {
         const method = id ? 'PUT' : 'POST';
